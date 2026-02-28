@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EPR Packaging Compliance | SustainZone</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --teal: #1DCECE;
+      --teal-dark: #13A8A8;
+      --teal-light: #E6FAFA;
+      --orange: #E87214;
+      --orange-light: #FFF3E8;
+      --red: #C0392B;
+      --green: #1A8A5A;
+      --dark: #1C2B2B;
+      --mid: #3D5555;
+      --grey: #6B7C7C;
+      --light: #F4FAFA;
+      --white: #FFFFFF;
+      --border: #D0E8E8;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; color: var(--dark); background: var(--white); line-height: 1.6; }
+
+    nav { background: var(--dark); padding: 16px 40px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { color: var(--teal); font-size: 22px; font-weight: 800; }
+    .logo span { color: var(--white); }
+    .nav-links { display: flex; gap: 28px; }
+    .nav-links a { color: #A8C4C4; text-decoration: none; font-size: 14px; font-weight: 500; }
+    .nav-links a:hover { color: var(--teal); }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, #1A2E1A 0%, #1E3A1E 55%, #0D2A0D 100%);
+      padding: 80px 40px 70px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: -80px; right: -80px;
+      width: 350px; height: 350px;
+      background: radial-gradient(circle, rgba(29,206,206,0.12) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(29,206,206,0.15);
+      color: var(--teal);
+      border: 1px solid rgba(29,206,206,0.3);
+      padding: 6px 18px;
+      border-radius: 20px;
+      font-size: 13px; font-weight: 600;
+      letter-spacing: 1px; text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .hero h1 { color: var(--white); font-size: 44px; font-weight: 800; line-height: 1.2; max-width: 800px; margin: 0 auto 20px; }
+    .hero h1 em { color: var(--teal); font-style: normal; }
+    .hero p { color: #A8C4C4; font-size: 19px; max-width: 620px; margin: 0 auto 36px; }
+    .hero-cta { display: inline-block; background: var(--orange); color: var(--white); padding: 16px 36px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 16px; }
+    .hero-stats { display: flex; justify-content: center; gap: 48px; margin-top: 56px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .hero-stat { text-align: center; }
+    .hero-stat .num { font-size: 36px; font-weight: 800; color: var(--teal); }
+    .hero-stat .label { font-size: 13px; color: #A8C4C4; margin-top: 4px; }
+
+    section { padding: 72px 40px; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .section-tag { display: inline-block; color: var(--teal-dark); font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; }
+    h2 { font-size: 34px; font-weight: 800; color: var(--dark); margin-bottom: 16px; }
+    h2 span { color: var(--teal-dark); }
+    .intro-text { font-size: 17px; color: var(--grey); max-width: 700px; margin-bottom: 40px; line-height: 1.8; }
+
+    /* ALERT BANNER */
+    .alert-banner { background: linear-gradient(135deg, #FFF3E8, #FFF8F2); border-left: 5px solid var(--orange); border-radius: 10px; padding: 20px 24px; margin-bottom: 40px; display: flex; gap: 16px; align-items: flex-start; }
+    .alert-icon { font-size: 28px; flex-shrink: 0; }
+    .alert-text strong { display: block; color: var(--orange); font-size: 16px; margin-bottom: 6px; }
+    .alert-text p { color: var(--mid); font-size: 14px; line-height: 1.6; }
+
+    /* CHALLENGE */
+    .challenge { background: var(--light); }
+    .challenge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+    .challenge-content p { color: var(--mid); font-size: 16px; line-height: 1.8; margin-bottom: 20px; }
+    .timeline { display: flex; flex-direction: column; gap: 0; }
+    .timeline-item { display: flex; gap: 0; }
+    .timeline-left { display: flex; flex-direction: column; align-items: center; width: 44px; flex-shrink: 0; }
+    .timeline-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--teal); border: 3px solid var(--white); box-shadow: 0 0 0 2px var(--teal); flex-shrink: 0; }
+    .timeline-dot.orange { background: var(--orange); box-shadow: 0 0 0 2px var(--orange); }
+    .timeline-dot.red { background: var(--red); box-shadow: 0 0 0 2px var(--red); }
+    .timeline-line { width: 2px; flex: 1; background: var(--border); min-height: 28px; }
+    .timeline-content { padding: 0 0 24px 12px; flex: 1; }
+    .timeline-content .date { font-size: 12px; font-weight: 700; color: var(--teal-dark); letter-spacing: 0.5px; margin-bottom: 4px; }
+    .timeline-content .date.orange { color: var(--orange); }
+    .timeline-content .date.red { color: var(--red); }
+    .timeline-content strong { display: block; font-size: 14px; color: var(--dark); margin-bottom: 4px; }
+    .timeline-content p { font-size: 13px; color: var(--grey); margin: 0; line-height: 1.5; }
+
+    /* CHARTS */
+    .charts-section { background: var(--white); }
+    .charts-intro { text-align: center; margin-bottom: 56px; }
+    .chart-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-bottom: 28px; }
+    .chart-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 28px; margin-bottom: 28px; }
+    .chart-card { background: var(--white); border: 1px solid var(--border); border-radius: 14px; padding: 28px; box-shadow: 0 2px 16px rgba(0,0,0,0.05); }
+    .chart-card.full { grid-column: 1 / -1; }
+    .chart-card h3 { font-size: 16px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+    .chart-card .chart-sub { font-size: 13px; color: var(--grey); margin-bottom: 20px; }
+    .chart-insight { display: inline-flex; align-items: center; gap: 6px; background: var(--teal-light); color: var(--teal-dark); font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 20px; margin-top: 14px; }
+    .chart-insight.orange { background: var(--orange-light); color: var(--orange); }
+    .chart-insight.red { background: #FEF0EF; color: var(--red); }
+
+    /* SERVICES */
+    .services { background: var(--light); }
+    .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .service-card { background: var(--white); border-radius: 14px; padding: 28px; border-top: 4px solid var(--teal); box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+    .service-card .step-num { font-size: 12px; font-weight: 700; color: var(--teal-dark); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+    .service-card h3 { font-size: 17px; font-weight: 700; color: var(--dark); margin-bottom: 10px; }
+    .service-card p { font-size: 14px; color: var(--grey); line-height: 1.7; }
+
+    /* COST OF INACTION */
+    .inaction { background: linear-gradient(135deg, #2A1A1A 0%, #2A1C1C 100%); }
+    .inaction h2 { color: var(--white); }
+    .inaction h2 span { color: var(--orange); }
+    .inaction-intro { color: rgba(255,255,255,0.75); font-size: 17px; max-width: 650px; margin-bottom: 40px; line-height: 1.8; }
+    .inaction-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .inaction-card { background: rgba(255,255,255,0.06); border-radius: 14px; padding: 28px; border: 1px solid rgba(232,114,20,0.2); text-align: center; }
+    .inaction-card .icon { font-size: 36px; margin-bottom: 14px; }
+    .inaction-card strong { display: block; color: var(--orange); font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .inaction-card p { color: rgba(255,255,255,0.65); font-size: 13px; line-height: 1.6; }
+
+    /* WHY */
+    .why { background: var(--dark); }
+    .why h2 { color: var(--white); }
+    .why h2 span { color: var(--teal); }
+    .why-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 40px; }
+    .why-card { text-align: center; padding: 28px 20px; background: rgba(255,255,255,0.05); border-radius: 14px; border: 1px solid rgba(29,206,206,0.15); }
+    .why-card .icon { font-size: 36px; margin-bottom: 14px; }
+    .why-card strong { display: block; color: var(--teal); font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .why-card p { color: #A8C4C4; font-size: 13px; line-height: 1.6; }
+
+    /* CTA */
+    .cta-section { background: linear-gradient(135deg, var(--teal-dark), #0D9090); padding: 72px 40px; text-align: center; }
+    .cta-section h2 { color: var(--white); font-size: 36px; margin-bottom: 14px; }
+    .cta-section p { color: rgba(255,255,255,0.85); font-size: 18px; max-width: 520px; margin: 0 auto 36px; }
+    .cta-btn { display: inline-block; background: var(--orange); color: var(--white); padding: 18px 44px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 17px; }
+
+    footer { background: #111D1D; padding: 28px 40px; text-align: center; }
+    footer p { color: #5A7A7A; font-size: 13px; }
+    footer span { color: var(--teal); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Sustain<span>Zone</span></div>
+  <div class="nav-links">
+    <a href="#">Carbon Reduction</a>
+    <a href="#">EPR Compliance</a>
+    <a href="#">EUDR</a>
+    <a href="#">About</a>
+    <a href="#">Contact</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">📦 UK EPR Packaging</div>
+  <h1>Navigate UK Extended Producer Responsibility<br>With <em>Confidence</em></h1>
+  <p>End-to-end EPR packaging compliance for producers, importers, and brand owners — so you meet obligations without operational disruption.</p>
+  <a href="#contact" class="hero-cta">Get Your Free EPR Compliance Assessment →</a>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="num">£1B+</div><div class="label">Annual UK EPR Fee Pool</div></div>
+    <div class="hero-stat"><div class="num">2025</div><div class="label">Full Fee Liability Year</div></div>
+    <div class="hero-stat"><div class="num">50kg+</div><div class="label">Triggers Obligation</div></div>
+    <div class="hero-stat"><div class="num">6</div><div class="label">Packaging Material Categories</div></div>
+  </div>
+</div>
+
+<!-- CHALLENGE -->
+<section class="challenge">
+  <div class="container">
+    <div class="challenge-grid">
+      <div class="challenge-content">
+        <div class="section-tag">The Challenge</div>
+        <h2>EPR Is <span>Transforming</span> Packaging Obligations</h2>
+        <div class="alert-banner">
+          <div class="alert-icon">⚠️</div>
+          <div class="alert-text">
+            <strong>Non-compliance carries significant financial risk</strong>
+            <p>The UK EPR scheme places full producer responsibility fees on packaging placed to market — with penalties for late registration, inaccurate data submissions, and missed deadlines.</p>
+          </div>
+        </div>
+        <p>With new fee structures, data reporting requirements, and producer obligations, the UK's Extended Producer Responsibility regulations are the biggest change to packaging law in a generation.</p>
+        <p>Whether you're a producer, importer, seller, or distributor, understanding your obligations — and acting on them — has never been more urgent.</p>
+      </div>
+      <div>
+        <div class="section-tag">EPR Compliance Timeline</div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div>
+            <div class="timeline-content">
+              <div class="date">April 2023</div>
+              <strong>Registration Required</strong>
+              <p>Obligated producers must register with the Environment Agency or equivalent body.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div>
+            <div class="timeline-content">
+              <div class="date">Oct 2023 — Oct 2024</div>
+              <strong>Data Reporting Phase</strong>
+              <p>Six-monthly packaging data submissions covering tonnages by material type and category.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-left"><div class="timeline-dot orange"></div><div class="timeline-line"></div></div>
+            <div class="timeline-content">
+              <div class="date orange">2025 — Ongoing</div>
+              <strong>Fee Payments Begin</strong>
+              <p>Full producer responsibility fees activated. Fee levels tied directly to packaging recyclability scores.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-left"><div class="timeline-dot red"></div><div class="timeline-line"></div></div>
+            <div class="timeline-content">
+              <div class="date red">2026+</div>
+              <strong>Fee Modulation Ramps Up</strong>
+              <p>Divergence between recyclable and non-recyclable packaging fees increases substantially. Early packaging redesign pays dividends.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHARTS -->
+<section class="charts-section">
+  <div class="container">
+    <div class="charts-intro">
+      <div class="section-tag">EPR Data & Insights</div>
+      <h2>Understanding Your <span>EPR Exposure</span></h2>
+      <p>Data-driven insights into UK EPR fee structures, packaging waste flows, and the financial impact of early action on packaging recyclability.</p>
+    </div>
+
+    <!-- Row 1: Fee modulation bar chart (full width) -->
+    <div style="margin-bottom:28px;">
+      <div class="chart-card full">
+        <h3>EPR Fee Modulation by Packaging Material</h3>
+        <div class="chart-sub">Illustrative modulated EPR fee rates (£/tonne) by material type and recyclability classification — businesses with lower recyclability ratings face significantly higher costs</div>
+        <div style="height:280px;">
+          <canvas id="feeChart"></canvas>
+        </div>
+        <div style="display:flex; gap:12px; margin-top:14px; flex-wrap:wrap;">
+          <span class="chart-insight">✅ Recyclable materials attract the lowest fees</span>
+          <span class="chart-insight orange">⚠️ Black plastic & multi-layer laminates face highest charges</span>
+          <span class="chart-insight red">❌ Early packaging redesign can reduce EPR costs by 40–60%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Two charts -->
+    <div class="chart-grid-2" style="margin-bottom:28px;">
+      <div class="chart-card">
+        <h3>UK Packaging Waste by Material (2024)</h3>
+        <div class="chart-sub">Annual volumes of obligated UK packaging by material category (estimated millions of tonnes)</div>
+        <div style="height:270px;">
+          <canvas id="materialChart"></canvas>
+        </div>
+        <span class="chart-insight">📊 Plastic represents the highest EPR fee exposure</span>
+      </div>
+      <div class="chart-card">
+        <h3>Compliance Cost: Early vs Late Action</h3>
+        <div class="chart-sub">Cumulative EPR costs (indexed) for businesses that optimise packaging early vs those that delay (2025–2030)</div>
+        <div style="height:270px;">
+          <canvas id="actionChart"></canvas>
+        </div>
+        <span class="chart-insight orange">💰 Early redesign saves an estimated 35–45% in fees by 2030</span>
+      </div>
+    </div>
+
+    <!-- Row 3: Recyclability radar + obligations by business type -->
+    <div class="chart-grid-2">
+      <div class="chart-card">
+        <h3>UK Producer EPR Obligations by Business Role</h3>
+        <div class="chart-sub">Proportion of EPR obligations applying to each supply chain role (indicative)</div>
+        <div style="height:250px;">
+          <canvas id="obligationChart"></canvas>
+        </div>
+        <span class="chart-insight">🏭 Brand owners carry the largest obligation share</span>
+      </div>
+      <div class="chart-card">
+        <h3>Packaging Recyclability Score Impact on Fees</h3>
+        <div class="chart-sub">How improving recyclability score (0–100) reduces annual EPR fee liability — based on illustrative £2M baseline exposure</div>
+        <div style="height:250px;">
+          <canvas id="recyclabilityChart"></canvas>
+        </div>
+        <span class="chart-insight orange">📈 Moving from 40→70 score can halve your fee liability</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="services">
+  <div class="container">
+    <div class="section-tag">Our Services</div>
+    <h2>How SustainZone <span>Simplifies Compliance</span></h2>
+    <p class="intro-text">We simplify EPR compliance for SMEs and mid-market businesses — providing clear, actionable guidance and hands-on support across every obligation.</p>
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="step-num">Service 01</div>
+        <h3>📋 Obligation Assessment</h3>
+        <p>Determine your EPR classification and obligations based on packaging tonnage and supply chain role — producer, importer, seller, or distributor.</p>
+      </div>
+      <div class="service-card">
+        <div class="step-num">Service 02</div>
+        <h3>📊 Packaging Data Collection</h3>
+        <p>Accurate data gathering across all packaging types, materials, and formats. We navigate the complexity of multi-tier supply chain packaging data so you don't have to.</p>
+      </div>
+      <div class="service-card">
+        <div class="step-num">Service 03</div>
+        <h3>💡 Fee Modulation Strategy</h3>
+        <p>Optimise packaging design to minimise EPR fees through material selection and recyclability improvements — turning compliance into competitive advantage.</p>
+      </div>
+      <div class="service-card">
+        <div class="step-num">Service 04</div>
+        <h3>📝 Registration & Submission</h3>
+        <p>Full support with regulatory registration and periodic data submissions — accurate, on time, and compliant with Environment Agency requirements.</p>
+      </div>
+      <div class="service-card">
+        <div class="step-num">Service 05</div>
+        <h3>🔗 Supply Chain Sustainability</h3>
+        <p>Integrate EPR compliance into broader supply chain sustainability strategies — linking packaging obligations to your wider ESG commitments.</p>
+      </div>
+      <div class="service-card">
+        <div class="step-num">Service 06</div>
+        <h3>📡 Ongoing Compliance Monitoring</h3>
+        <p>Stay ahead of evolving regulations with technology-enabled tracking. EPR is a live obligation — we keep you current as rules develop.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COST OF INACTION -->
+<section class="inaction">
+  <div class="container">
+    <div class="section-tag" style="color:var(--orange);">Cost of Inaction</div>
+    <h2>The Cost of <span>Doing Nothing</span></h2>
+    <p class="inaction-intro">EPR fees are linked to packaging recyclability — businesses using harder-to-recycle materials will face significantly higher costs. Early action delivers both compliance certainty and material cost savings.</p>
+    <div class="inaction-grid">
+      <div class="inaction-card">
+        <div class="icon">💸</div>
+        <strong>Higher Fee Exposure</strong>
+        <p>Non-recyclable packaging attracts fee premiums of 2–5x compared to fully recyclable equivalents. Every tonne counts.</p>
+      </div>
+      <div class="inaction-card">
+        <div class="icon">⚖️</div>
+        <strong>Regulatory Penalties</strong>
+        <p>Late registration, inaccurate data submissions, and missed reporting windows carry financial penalties and Environment Agency enforcement action.</p>
+      </div>
+      <div class="inaction-card">
+        <div class="icon">🏢</div>
+        <strong>Supply Chain Disruption</strong>
+        <p>Major retailers and brand owners are cascading EPR data requirements down supply chains. Non-compliance risks contract exclusion.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY -->
+<section class="why">
+  <div class="container">
+    <div class="section-tag" style="color:var(--teal);">Why SustainZone</div>
+    <h2>Regulatory Expertise Meets <span>Supply Chain Reality</span></h2>
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="icon">🏆</div>
+        <strong>Regulatory Expertise</strong>
+        <p>Deep knowledge of UK EPR legislation, Environment Agency requirements, and evolving fee modulation frameworks.</p>
+      </div>
+      <div class="why-card">
+        <div class="icon">🔗</div>
+        <strong>Supply Chain Depth</strong>
+        <p>We understand multi-tier supply chain complexity — including the real challenges of cross-border packaging data collection.</p>
+      </div>
+      <div class="why-card">
+        <div class="icon">📐</div>
+        <strong>Practical Guidance</strong>
+        <p>Not just advice — we provide hands-on implementation support for data collection, submission, and registration processes.</p>
+      </div>
+      <div class="why-card">
+        <div class="icon">💰</div>
+        <strong>Cost Optimisation</strong>
+        <p>We turn EPR compliance into a packaging optimisation opportunity — reducing fees while improving sustainability credentials.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section" id="contact">
+  <h2>Get Ahead of Your EPR Obligations</h2>
+  <p>Book a free EPR compliance assessment — we'll map your obligations, data gaps, and fee exposure in one session.</p>
+  <a href="#" class="cta-btn">Get Your Free EPR Compliance Assessment →</a>
+</div>
+
+<footer>
+  <p>© 2025 <span>SustainZone</span>. All rights reserved. | EPR Packaging Compliance Specialists.</p>
+</footer>
+
+<script>
+Chart.defaults.font.family = "'Segoe UI', Arial, sans-serif";
+Chart.defaults.color = '#6B7C7C';
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+
+const TEAL  = '#1DCECE';
+const TEAL2 = '#7DDEDE';
+const ORANGE = '#E87214';
+const RED   = '#C0392B';
+const GREEN = '#1A8A5A';
+const GREY  = '#B0CCCC';
+
+// ─── 1. FEE MODULATION BAR CHART ────────────────────────
+new Chart(document.getElementById('feeChart'), {
+  type: 'bar',
+  data: {
+    labels: [
+      'Clear PET Bottles', 'Cardboard/Paper', 'Aluminium Cans',
+      'Glass Bottles', 'HDPE Bottles', 'Coloured PET',
+      'Polypropylene', 'EPS Foam', 'Black Plastic', 'Multi-layer Laminates'
+    ],
+    datasets: [
+      {
+        label: 'Current Fee (£/tonne)',
+        data: [85, 75, 90, 60, 80, 140, 160, 310, 420, 480],
+        backgroundColor: [
+          GREEN, GREEN, GREEN, GREEN, GREEN,
+          ORANGE, ORANGE, RED, RED, RED
+        ],
+        borderRadius: 6,
+        borderSkipped: false,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: c => `EPR Fee: £${c.parsed.y}/tonne`,
+          afterLabel: c => c.parsed.y < 100 ? '✅ Low fee — recyclable' : c.parsed.y < 250 ? '⚠️ Medium fee — moderate recyclability' : '❌ High fee — low recyclability'
+        }
+      }
+    },
+    scales: {
+      x: { grid: { display: false } },
+      y: {
+        grid: { color: 'rgba(0,0,0,0.05)' },
+        ticks: { callback: v => '£' + v },
+        title: { display: true, text: '£ per tonne' }
+      }
+    }
+  }
+});
+
+// ─── 2. PACKAGING MATERIAL DOUGHNUT ──────────────────────
+new Chart(document.getElementById('materialChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Plastic', 'Paper & Card', 'Glass', 'Metal (Steel)', 'Metal (Aluminium)', 'Wood & Other'],
+    datasets: [{
+      data: [44, 26, 14, 7, 5, 4],
+      backgroundColor: [RED, TEAL, TEAL2, ORANGE, 'rgba(232,114,20,0.5)', GREY],
+      borderColor: '#fff', borderWidth: 3, hoverOffset: 8
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '65%',
+    plugins: {
+      legend: { position: 'bottom', labels: { padding: 12, boxWidth: 11, font: { size: 12 } } },
+      tooltip: { callbacks: { label: c => ` ${c.label}: ${c.parsed}%` } }
+    }
+  }
+});
+
+// ─── 3. EARLY vs LATE ACTION LINE CHART ───────────────────
+const actionYears = [2025, 2026, 2027, 2028, 2029, 2030];
+new Chart(document.getElementById('actionChart'), {
+  type: 'line',
+  data: {
+    labels: actionYears,
+    datasets: [
+      {
+        label: 'No Action — Fee Liability',
+        data: [100, 118, 138, 162, 190, 220],
+        borderColor: RED,
+        backgroundColor: 'rgba(192,57,43,0.1)',
+        fill: true, borderWidth: 3, tension: 0.4,
+        pointRadius: 5, pointBackgroundColor: RED
+      },
+      {
+        label: 'Early Packaging Optimisation',
+        data: [100, 95, 84, 74, 66, 60],
+        borderColor: GREEN,
+        backgroundColor: 'rgba(26,138,90,0.1)',
+        fill: true, borderWidth: 3, tension: 0.4,
+        pointRadius: 5, pointBackgroundColor: GREEN
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top' },
+      tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y} (index)` } }
+    },
+    scales: {
+      x: { grid: { color: 'rgba(0,0,0,0.04)' } },
+      y: {
+        grid: { color: 'rgba(0,0,0,0.04)' },
+        title: { display: true, text: 'Fee Liability (Indexed 2025=100)' },
+        min: 50
+      }
+    }
+  }
+});
+
+// ─── 4. OBLIGATION BY BUSINESS ROLE ──────────────────────
+new Chart(document.getElementById('obligationChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Brand Owners / Producers', 'Importers', 'Retailers / Sellers', 'Distributors'],
+    datasets: [{
+      data: [48, 28, 16, 8],
+      backgroundColor: [TEAL, ORANGE, TEAL2, GREY],
+      borderColor: '#fff', borderWidth: 3, hoverOffset: 8
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '60%',
+    plugins: {
+      legend: { position: 'bottom', labels: { padding: 12, boxWidth: 11, font: { size: 12 } } },
+      tooltip: { callbacks: { label: c => ` ${c.label}: ${c.parsed}%` } }
+    }
+  }
+});
+
+// ─── 5. RECYCLABILITY SCORE AREA CHART ────────────────────
+new Chart(document.getElementById('recyclabilityChart'), {
+  type: 'line',
+  data: {
+    labels: ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'],
+    datasets: [{
+      label: 'Annual EPR Fee Liability (£000s)',
+      data: [2000, 1920, 1820, 1700, 1550, 1360, 1140, 900, 640, 380, 150],
+      borderColor: TEAL,
+      backgroundColor: 'rgba(29,206,206,0.12)',
+      fill: true, borderWidth: 3, tension: 0.4,
+      pointRadius: 4, pointBackgroundColor: TEAL
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: c => `Fee liability: £${c.parsed.y.toLocaleString()}` } }
+    },
+    scales: {
+      x: {
+        grid: { color: 'rgba(0,0,0,0.04)' },
+        title: { display: true, text: 'Recyclability Score (0–100)' }
+      },
+      y: {
+        grid: { color: 'rgba(0,0,0,0.04)' },
+        ticks: { callback: v => '£' + (v/1000) + 'k' },
+        title: { display: true, text: 'Annual EPR Fees (£)' }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>

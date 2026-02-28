@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EUDR Compliance Solutions | SustainZone</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --teal: #1DCECE;
+      --teal-dark: #13A8A8;
+      --teal-light: #E6FAFA;
+      --orange: #E87214;
+      --orange-light: #FFF3E8;
+      --red: #C0392B;
+      --amber: #D68910;
+      --green: #1A8A5A;
+      --dark: #1C2B2B;
+      --mid: #3D5555;
+      --grey: #6B7C7C;
+      --light: #F4FAFA;
+      --white: #FFFFFF;
+      --border: #D0E8E8;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; color: var(--dark); background: var(--white); line-height: 1.6; }
+
+    nav { background: var(--dark); padding: 16px 40px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { color: var(--teal); font-size: 22px; font-weight: 800; }
+    .logo span { color: var(--white); }
+    .nav-links { display: flex; gap: 28px; }
+    .nav-links a { color: #A8C4C4; text-decoration: none; font-size: 14px; font-weight: 500; }
+    .nav-links a:hover { color: var(--teal); }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, #1A241A 0%, #1C3020 55%, #0D2010 100%);
+      padding: 80px 40px 70px;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: -80px; left: -80px;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(26,138,90,0.15) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .hero::after {
+      content: '';
+      position: absolute; bottom: -60px; right: -60px;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(29,206,206,0.12) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(29,206,206,0.15); color: var(--teal);
+      border: 1px solid rgba(29,206,206,0.3);
+      padding: 6px 18px; border-radius: 20px;
+      font-size: 13px; font-weight: 600;
+      letter-spacing: 1px; text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .hero h1 { color: var(--white); font-size: 44px; font-weight: 800; line-height: 1.2; max-width: 800px; margin: 0 auto 20px; }
+    .hero h1 em { color: var(--teal); font-style: normal; }
+    .hero p { color: #A8C4C4; font-size: 19px; max-width: 640px; margin: 0 auto 36px; }
+    .hero-cta { display: inline-block; background: var(--orange); color: var(--white); padding: 16px 36px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 16px; }
+    .hero-stats { display: flex; justify-content: center; gap: 48px; margin-top: 56px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .hero-stat { text-align: center; }
+    .hero-stat .num { font-size: 34px; font-weight: 800; color: var(--teal); }
+    .hero-stat .label { font-size: 13px; color: #A8C4C4; margin-top: 4px; }
+
+    section { padding: 72px 40px; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .section-tag { display: inline-block; color: var(--teal-dark); font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; }
+    h2 { font-size: 34px; font-weight: 800; color: var(--dark); margin-bottom: 16px; }
+    h2 span { color: var(--teal-dark); }
+    .intro-text { font-size: 17px; color: var(--grey); max-width: 700px; margin-bottom: 40px; line-height: 1.8; }
+
+    /* CHALLENGE */
+    .challenge { background: var(--light); }
+    .challenge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+    .challenge-content p { color: var(--mid); font-size: 16px; line-height: 1.8; margin-bottom: 20px; }
+
+    /* URGENCY CARDS */
+    .urgency-cards { display: flex; flex-direction: column; gap: 16px; }
+    .urgency-card { display: flex; align-items: flex-start; gap: 14px; background: var(--white); padding: 18px; border-radius: 10px; }
+    .urgency-card.high { border-left: 4px solid var(--red); }
+    .urgency-card.med  { border-left: 4px solid var(--amber); }
+    .urgency-card.low  { border-left: 4px solid var(--teal); }
+    .urgency-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+    .urgency-card strong { display: block; font-size: 14px; color: var(--dark); margin-bottom: 4px; }
+    .urgency-card p { font-size: 13px; color: var(--grey); margin: 0; line-height: 1.5; }
+
+    /* CHARTS */
+    .charts-section { background: var(--white); }
+    .charts-intro { text-align: center; margin-bottom: 56px; }
+    .chart-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-bottom: 28px; }
+    .chart-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 28px; margin-bottom: 28px; }
+    .chart-card { background: var(--white); border: 1px solid var(--border); border-radius: 14px; padding: 28px; box-shadow: 0 2px 16px rgba(0,0,0,0.05); }
+    .chart-card.full { grid-column: 1 / -1; }
+    .chart-card h3 { font-size: 16px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+    .chart-card .chart-sub { font-size: 13px; color: var(--grey); margin-bottom: 20px; }
+    .chart-insight { display: inline-flex; align-items: center; gap: 6px; background: var(--teal-light); color: var(--teal-dark); font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 20px; margin-top: 14px; }
+    .chart-insight.orange { background: var(--orange-light); color: var(--orange); }
+    .chart-insight.red { background: #FEF0EF; color: var(--red); }
+
+    /* RISK TRAFFIC LIGHTS */
+    .risk-legend { display: flex; gap: 18px; margin-bottom: 16px; flex-wrap: wrap; }
+    .risk-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 14px; border-radius: 16px; font-size: 12px; font-weight: 600; }
+    .risk-pill.high { background: #FEF0EF; color: var(--red); }
+    .risk-pill.med  { background: #FFF7E6; color: var(--amber); }
+    .risk-pill.low  { background: #EAF7F0; color: var(--green); }
+
+    /* SERVICES */
+    .services { background: var(--light); }
+    .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .service-card { background: var(--white); border-radius: 14px; padding: 28px; border-top: 4px solid var(--teal); box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+    .service-card .step-num { font-size: 12px; font-weight: 700; color: var(--teal-dark); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+    .service-card h3 { font-size: 17px; font-weight: 700; color: var(--dark); margin-bottom: 10px; }
+    .service-card p { font-size: 14px; color: var(--grey); line-height: 1.7; }
+
+    /* SECTOR EXPERTISE */
+    .sector { background: var(--dark); }
+    .sector h2 { color: var(--white); }
+    .sector h2 span { color: var(--teal); }
+    .sector-text { color: rgba(255,255,255,0.75); font-size: 17px; max-width: 700px; margin-bottom: 40px; line-height: 1.8; }
+    .commodity-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .commodity-card { background: rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; border: 1px solid rgba(29,206,206,0.15); text-align: center; }
+    .commodity-card .icon { font-size: 34px; margin-bottom: 10px; }
+    .commodity-card strong { display: block; color: var(--teal); font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .commodity-card p { color: rgba(255,255,255,0.55); font-size: 12px; line-height: 1.5; }
+
+    /* WHY */
+    .why { background: var(--light); }
+    .why-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 40px; }
+    .why-card { background: var(--white); text-align: center; padding: 28px 20px; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+    .why-card .icon { font-size: 36px; margin-bottom: 14px; }
+    .why-card strong { display: block; color: var(--teal-dark); font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .why-card p { color: var(--grey); font-size: 13px; line-height: 1.6; }
+
+    /* CTA */
+    .cta-section { background: linear-gradient(135deg, var(--teal-dark), #0D9090); padding: 72px 40px; text-align: center; }
+    .cta-section h2 { color: var(--white); font-size: 36px; margin-bottom: 14px; }
+    .cta-section p { color: rgba(255,255,255,0.85); font-size: 18px; max-width: 540px; margin: 0 auto 36px; }
+    .cta-btn { display: inline-block; background: var(--orange); color: var(--white); padding: 18px 44px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 17px; }
+
+    footer { background: #111D1D; padding: 28px 40px; text-align: center; }
+    footer p { color: #5A7A7A; font-size: 13px; }
+    footer span { color: var(--teal); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Sustain<span>Zone</span></div>
+  <div class="nav-links">
+    <a href="#">Carbon Reduction</a>
+    <a href="#">EPR Compliance</a>
+    <a href="#">EUDR</a>
+    <a href="#">About</a>
+    <a href="#">Contact</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">🌳 EU Deforestation Regulation</div>
+  <h1>EUDR Compliance Solutions for<br>UK & <em>European Businesses</em></h1>
+  <p>Expert guidance on the EU Deforestation Regulation — from due diligence systems to supply chain traceability and geolocation compliance.</p>
+  <a href="#contact" class="hero-cta">Book Your EUDR Readiness Assessment →</a>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="num">€50K</div><div class="label">Max Fine Per Violation</div></div>
+    <div class="hero-stat"><div class="num">7</div><div class="label">Key Commodity Categories</div></div>
+    <div class="hero-stat"><div class="num">Plot</div><div class="label">Level Geolocation Required</div></div>
+    <div class="hero-stat"><div class="num">2025</div><div class="label">Enforcement Deadline (Large Cos)</div></div>
+  </div>
+</div>
+
+<!-- CHALLENGE -->
+<section class="challenge">
+  <div class="container">
+    <div class="challenge-grid">
+      <div class="challenge-content">
+        <div class="section-tag">The Challenge</div>
+        <h2>EUDR Demands <span>Deep Supply Chain</span> Visibility</h2>
+        <p>The EU Deforestation Regulation (EUDR) requires businesses placing specified commodities on the EU market to demonstrate their products are deforestation-free and legally produced.</p>
+        <p>With plot-level geolocation requirements, mandatory due diligence obligations, and significant penalties for non-compliance, the regulation demands robust systems and genuine supply chain transparency — not just paper commitments.</p>
+        <p>For many businesses, the challenge is not willingness to comply — it's the practical complexity of achieving it across multi-tier global supply chains with legacy supplier relationships.</p>
+      </div>
+      <div>
+        <div class="section-tag">Compliance Risk Factors</div>
+        <div class="urgency-cards">
+          <div class="urgency-card high">
+            <div class="urgency-icon">🔴</div>
+            <div><strong>Geolocation Data Gaps</strong><p>Plot-level coordinates required for all commodity origins — most businesses lack this data and supplier capacity to provide it.</p></div>
+          </div>
+          <div class="urgency-card high">
+            <div class="urgency-icon">🔴</div>
+            <div><strong>Multi-Tier Supply Chains</strong><p>EUDR traceability obligations extend beyond Tier 1 suppliers — requiring visibility through processing, trading, and sourcing layers.</p></div>
+          </div>
+          <div class="urgency-card med">
+            <div class="urgency-icon">🟡</div>
+            <div><strong>Country Risk Benchmarking</strong><p>Risk classification varies by origin country — requiring dynamic country-level assessments and monitoring.</p></div>
+          </div>
+          <div class="urgency-card low">
+            <div class="urgency-icon">🔵</div>
+            <div><strong>Due Diligence Documentation</strong><p>All assessments, risk mitigations, and supplier engagements must be documented and available for competent authority review.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHARTS -->
+<section class="charts-section">
+  <div class="container">
+    <div class="charts-intro">
+      <div class="section-tag">EUDR Risk Intelligence</div>
+      <h2>Know Your <span>Commodity Risk</span> Profile</h2>
+      <p>Data-driven insights into EUDR commodity deforestation risk, enforcement timelines, and the supply chain readiness gap facing most businesses.</p>
+    </div>
+
+    <!-- Row 1: Commodity deforestation risk (full) -->
+    <div style="margin-bottom:28px;">
+      <div class="chart-card full">
+        <h3>Deforestation Risk by EUDR Commodity Category</h3>
+        <div class="chart-sub">Risk score (0–100) based on Forest Declaration Assessment deforestation association data — higher score = greater regulatory scrutiny and due diligence burden</div>
+        <div class="risk-legend">
+          <span class="risk-pill high">🔴 High Risk (70+)</span>
+          <span class="risk-pill med">🟡 Medium Risk (40–69)</span>
+          <span class="risk-pill low">🟢 Lower Risk (&lt;40)</span>
+        </div>
+        <div style="height:280px;">
+          <canvas id="commodityRiskChart"></canvas>
+        </div>
+        <div style="display:flex; gap:12px; margin-top:14px; flex-wrap:wrap;">
+          <span class="chart-insight red">🌴 Palm oil carries highest deforestation association</span>
+          <span class="chart-insight orange">🪵 Timber &amp; furniture require plot-level geolocation</span>
+          <span class="chart-insight">☕ Coffee &amp; cocoa face high origin-country scrutiny</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Readiness radar + compliance timeline -->
+    <div class="chart-grid-2" style="margin-bottom:28px;">
+      <div class="chart-card">
+        <h3>EUDR Supply Chain Readiness — Industry Average</h3>
+        <div class="chart-sub">Current industry readiness scores across key EUDR compliance dimensions (% of businesses meeting threshold)</div>
+        <div style="height:280px;">
+          <canvas id="readinessChart"></canvas>
+        </div>
+        <span class="chart-insight red">⚠️ Geolocation data is the critical gap for 80%+ of businesses</span>
+      </div>
+      <div class="chart-card">
+        <h3>EUDR Enforcement Timeline</h3>
+        <div class="chart-sub">Key regulatory milestones and preparedness lead times for large companies and SMEs</div>
+        <div style="height:280px;">
+          <canvas id="timelineChart"></canvas>
+        </div>
+        <span class="chart-insight orange">⏱️ Minimum 12–18 months needed to build compliant systems</span>
+      </div>
+    </div>
+
+    <!-- Row 3: Supply chain tiers + penalties -->
+    <div class="chart-grid-2">
+      <div class="chart-card">
+        <h3>Due Diligence Complexity by Supply Chain Tier</h3>
+        <div class="chart-sub">Data collection burden increases exponentially at lower supply chain tiers — most businesses only have Tier 1 visibility today</div>
+        <div style="height:240px;">
+          <canvas id="tierChart"></canvas>
+        </div>
+        <span class="chart-insight">🔗 Supplier capacity building is critical at Tier 3+</span>
+      </div>
+      <div class="chart-card">
+        <h3>EUDR Penalty Exposure by Non-Compliance Type</h3>
+        <div class="chart-sub">Indicative maximum fine levels (€) by violation category under EUDR enforcement framework</div>
+        <div style="height:240px;">
+          <canvas id="penaltyChart"></canvas>
+        </div>
+        <span class="chart-insight red">❌ Market exclusion is the highest-impact penalty</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="services">
+  <div class="container">
+    <div class="section-tag">Our Services</div>
+    <h2>Comprehensive EUDR <span>Compliance Frameworks</span></h2>
+    <p class="intro-text">We provide comprehensive EUDR compliance frameworks tailored to your sector, supply chain complexity, and risk profile — from readiness gap analysis to ongoing monitoring.</p>
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="step-num">Service 01</div>
+        <h3>🔍 EUDR Readiness Assessment</h3>
+        <p>Gap analysis of your current due diligence systems against EUDR requirements — identifying the specific actions needed to achieve compliance before enforcement deadlines.</p>
+      </div>
+      <div class="service-card">
+        <div class="step-num">Service 02</div>
+        <h3>📐 Due Diligence System Design</h3>
+        <p>Bespoke compliance frameworks including risk assessment methodologies, supplier engagement protocols, and documentation procedures tailored to your commodity mix.</p>
+      </div>
+      <div class="service-card">
+        <div class="step-num">Service 03</div>
+        <h3>📍 Geolocation & Traceability</h3>
+        <p>Technology platform recommendations and implementation support for plot-level geolocation data collection — addressing the most critical compliance gap for most businesses.</p>
+      </div>
+      <div class="service-card">
+        <div class="step-num">Service 04</div>
+        <h3>🤝 Supplier Capacity Building</h3>
+        <p>Structured programmes to bring your supply chain up to compliance standard — including supplier training, data collection tools, and engagement protocols.</p>
+      </div>
+      <div class="service-card">
+        <div class="step-num">Service 05</div>
+        <h3>🌍 Risk Assessment & Mitigation</h3>
+        <p>Country and supplier-level risk benchmarking with mitigation strategies — integrating forest risk data, legal compliance indicators, and origin-country assessments.</p>
+      </div>
+      <div class="service-card">
+        <div class="step-num">Service 06</div>
+        <h3>📡 Ongoing Monitoring & Reporting</h3>
+        <p>Continuous compliance monitoring with regulatory reporting support — keeping your due diligence systems current as regulations, country risk profiles, and supply chains evolve.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTOR EXPERTISE -->
+<section class="sector">
+  <div class="container">
+    <div class="section-tag" style="color:var(--teal);">Sector Expertise</div>
+    <h2>Deep Experience Across <span>EUDR Commodities</span></h2>
+    <p class="sector-text">We have deep experience supporting the European furniture sector, working with importers sourcing timber and wood-based products from complex global supply chains. Our frameworks address multi-tier supply chains, mixed-origin materials, and legacy supplier relationships.</p>
+    <div class="commodity-grid">
+      <div class="commodity-card"><div class="icon">🪵</div><strong>Timber & Wood</strong><p>Plot-level geolocation, species tracking, legality verification</p></div>
+      <div class="commodity-card"><div class="icon">🛋️</div><strong>Furniture</strong><p>Multi-component origin traceability, mixed-material compliance</p></div>
+      <div class="commodity-card"><div class="icon">🌴</div><strong>Palm Oil</strong><p>RSPO integration, smallholder supplier engagement</p></div>
+      <div class="commodity-card"><div class="icon">🌱</div><strong>Rubber</strong><p>Natural rubber sourcing, plantation origin mapping</p></div>
+      <div class="commodity-card"><div class="icon">🌾</div><strong>Soy</strong><p>Feed chain traceability, agricultural origin documentation</p></div>
+      <div class="commodity-card"><div class="icon">🐄</div><strong>Cattle</strong><p>Ranch-level geolocation, deforestation-free certification</p></div>
+      <div class="commodity-card"><div class="icon">☕</div><strong>Coffee</strong><p>Farm-level origin, smallholder cooperative engagement</p></div>
+      <div class="commodity-card"><div class="icon">🍫</div><strong>Cocoa</strong><p>Origin country risk, certification scheme integration</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY -->
+<section class="why">
+  <div class="container">
+    <div class="section-tag">Why SustainZone</div>
+    <h2>Why Act <span>Now</span>?</h2>
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="icon">⚡</div>
+        <strong>Enforcement Is Near</strong>
+        <p>EUDR enforcement timelines are active. Businesses that start now avoid the compliance crunch that will hit the majority.</p>
+      </div>
+      <div class="why-card">
+        <div class="icon">🔗</div>
+        <strong>Market Access</strong>
+        <p>Non-compliant products face EU market exclusion. Supply chain disruption and lost contracts far exceed compliance costs.</p>
+      </div>
+      <div class="why-card">
+        <div class="icon">🏆</div>
+        <strong>Competitive Edge</strong>
+        <p>Verified deforestation-free sourcing becomes a procurement differentiator — especially in public sector and B2B markets.</p>
+      </div>
+      <div class="why-card">
+        <div class="icon">🌍</div>
+        <strong>Real Impact</strong>
+        <p>Beyond compliance — robust EUDR systems contribute to genuine deforestation prevention and biodiversity protection.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section" id="contact">
+  <h2>Don't Wait for Enforcement to Act</h2>
+  <p>Book your EUDR Readiness Assessment — we'll identify your compliance gaps and build a practical pathway to certification.</p>
+  <a href="#" class="cta-btn">Book Your EUDR Readiness Assessment →</a>
+</div>
+
+<footer>
+  <p>© 2025 <span>SustainZone</span>. All rights reserved. | EUDR Compliance & Deforestation-Free Supply Chains.</p>
+</footer>
+
+<script>
+Chart.defaults.font.family = "'Segoe UI', Arial, sans-serif";
+Chart.defaults.color = '#6B7C7C';
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+
+const TEAL   = '#1DCECE';
+const TEAL2  = '#7DDEDE';
+const ORANGE = '#E87214';
+const RED    = '#C0392B';
+const AMBER  = '#D68910';
+const GREEN  = '#1A8A5A';
+const GREY   = '#B0CCCC';
+
+// ─── 1. COMMODITY RISK BAR ────────────────────────────────
+const riskColors = [RED, RED, '#E84444', AMBER, AMBER, AMBER, GREEN, GREEN];
+new Chart(document.getElementById('commodityRiskChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Palm Oil', 'Cattle (Beef/Leather)', 'Soy', 'Cocoa', 'Coffee', 'Timber & Wood', 'Rubber', 'Pulp & Paper'],
+    datasets: [{
+      label: 'Deforestation Risk Score (0–100)',
+      data: [88, 82, 76, 68, 64, 58, 42, 35],
+      backgroundColor: riskColors,
+      borderRadius: 7,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: c => `Risk Score: ${c.parsed.y}/100`,
+          afterLabel: c => c.parsed.y >= 70 ? '🔴 High Risk — Enhanced Due Diligence Required' : c.parsed.y >= 40 ? '🟡 Medium Risk — Standard Due Diligence' : '🟢 Lower Risk — Simplified Due Diligence'
+        }
+      }
+    },
+    scales: {
+      x: { grid: { display: false } },
+      y: {
+        grid: { color: 'rgba(0,0,0,0.05)' },
+        min: 0, max: 100,
+        title: { display: true, text: 'Deforestation Risk Score' }
+      }
+    }
+  }
+});
+
+// ─── 2. READINESS RADAR ───────────────────────────────────
+new Chart(document.getElementById('readinessChart'), {
+  type: 'radar',
+  data: {
+    labels: [
+      'Geolocation Data',
+      'Due Diligence\nDocs',
+      'Risk Assessment',
+      'Supplier\nEngagement',
+      'System &\nTechnology',
+      'Legal Compliance\nCheck'
+    ],
+    datasets: [
+      {
+        label: 'Industry Average Readiness (%)',
+        data: [18, 45, 52, 38, 26, 60],
+        backgroundColor: 'rgba(29,206,206,0.15)',
+        borderColor: TEAL,
+        borderWidth: 2,
+        pointBackgroundColor: TEAL,
+        pointRadius: 5,
+      },
+      {
+        label: 'EUDR Compliance Threshold (%)',
+        data: [80, 80, 80, 80, 80, 80],
+        backgroundColor: 'rgba(232,114,20,0.06)',
+        borderColor: ORANGE,
+        borderDash: [5, 4],
+        borderWidth: 2,
+        pointBackgroundColor: ORANGE,
+        pointRadius: 3,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { padding: 14, font: { size: 12 } } } },
+    scales: {
+      r: {
+        min: 0, max: 100,
+        ticks: { stepSize: 20, callback: v => v + '%' },
+        grid: { color: 'rgba(0,0,0,0.08)' },
+        pointLabels: { font: { size: 11 } }
+      }
+    }
+  }
+});
+
+// ─── 3. ENFORCEMENT TIMELINE ──────────────────────────────
+new Chart(document.getElementById('timelineChart'), {
+  type: 'bar',
+  data: {
+    labels: [
+      'Regulation\nPublished', 'Readiness\nAssessment', 'System\nDesign', 'Supplier\nEngagement', 'Geo-data\nCollection', 'Large Co\nDeadline', 'SME\nDeadline'],
+    datasets: [
+      {
+        label: 'Large Companies',
+        data: [0, 3, 6, 10, 16, 24, null],
+        backgroundColor: TEAL,
+        borderRadius: 5,
+      },
+      {
+        label: 'SMEs',
+        data: [0, 3, 6, 10, 16, null, 30],
+        backgroundColor: ORANGE,
+        borderRadius: 5,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      x: { grid: { display: false } },
+      y: {
+        grid: { color: 'rgba(0,0,0,0.05)' },
+        title: { display: true, text: 'Months from Regulation Entry into Force' },
+        min: 0
+      }
+    }
+  }
+});
+
+// ─── 4. SUPPLY CHAIN TIER COMPLEXITY ──────────────────────
+new Chart(document.getElementById('tierChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Tier 1\n(Direct Suppliers)', 'Tier 2\n(Processors)', 'Tier 3\n(Traders)', 'Tier 4\n(Farms / Origin)'],
+    datasets: [
+      {
+        label: '% Businesses With Visibility',
+        data: [85, 42, 18, 8],
+        backgroundColor: [GREEN, AMBER, ORANGE, RED],
+        borderRadius: 6,
+        borderSkipped: false,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.parsed.y}% of businesses have visibility at this tier` } } },
+    scales: {
+      x: { grid: { display: false } },
+      y: {
+        grid: { color: 'rgba(0,0,0,0.05)' },
+        ticks: { callback: v => v + '%' },
+        max: 100,
+        title: { display: true, text: '% Businesses With Supply Chain Visibility' }
+      }
+    }
+  }
+});
+
+// ─── 5. PENALTY EXPOSURE ──────────────────────────────────
+new Chart(document.getElementById('penaltyChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Market Access\nExclusion', 'Maximum\nFinancial Fine', 'Confiscation\nof Goods', 'Public\nNaming', 'Temporary\nBan'],
+    datasets: [{
+      label: 'Impact Severity',
+      data: [95, 85, 65, 50, 40],
+      backgroundColor: [RED, RED, ORANGE, AMBER, '#D4AC0D'],
+      borderRadius: 6,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: c => `Severity: ${c.parsed.x}/100`,
+          afterLabel: c => {
+            const notes = [
+              'Product removed from EU market entirely',
+              'Up to €50,000+ per violation',
+              'Non-compliant goods seized at border',
+              'Public register of non-compliant operators',
+              'Temporary prohibition from trading'
+            ];
+            return notes[c.dataIndex] || '';
+          }
+        }
+      }
+    },
+    scales: {
+      x: { grid: { color: 'rgba(0,0,0,0.05)' }, max: 100, title: { display: true, text: 'Impact Severity Score' } },
+      y: { grid: { display: false } }
+    }
+  }
+});
+</script>
+</body>
+</html>

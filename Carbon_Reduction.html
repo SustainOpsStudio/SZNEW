@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Carbon Reduction Plans & Net Zero Strategy | SustainZone</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --teal: #1DCECE;
+      --teal-dark: #13A8A8;
+      --teal-light: #E6FAFA;
+      --orange: #E87214;
+      --orange-light: #FFF3E8;
+      --dark: #1C2B2B;
+      --mid: #3D5555;
+      --grey: #6B7C7C;
+      --light: #F4FAFA;
+      --white: #FFFFFF;
+      --border: #D0E8E8;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; color: var(--dark); background: var(--white); line-height: 1.6; }
+
+    /* NAV */
+    nav { background: var(--dark); padding: 16px 40px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { color: var(--teal); font-size: 22px; font-weight: 800; letter-spacing: 0.5px; }
+    .logo span { color: var(--white); }
+    .nav-links { display: flex; gap: 28px; }
+    .nav-links a { color: #A8C4C4; text-decoration: none; font-size: 14px; font-weight: 500; }
+    .nav-links a:hover { color: var(--teal); }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, var(--dark) 0%, #1E3A3A 60%, #0D2A2A 100%);
+      padding: 80px 40px 70px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: -60px; right: -60px;
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(29,206,206,0.15) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .hero::after {
+      content: '';
+      position: absolute; bottom: -80px; left: -80px;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(232,114,20,0.1) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(29,206,206,0.15);
+      color: var(--teal);
+      border: 1px solid rgba(29,206,206,0.3);
+      padding: 6px 18px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .hero h1 { color: var(--white); font-size: 46px; font-weight: 800; line-height: 1.2; max-width: 780px; margin: 0 auto 20px; }
+    .hero h1 em { color: var(--teal); font-style: normal; }
+    .hero p { color: #A8C4C4; font-size: 19px; max-width: 600px; margin: 0 auto 36px; }
+    .hero-cta { display: inline-block; background: var(--orange); color: var(--white); padding: 16px 36px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 16px; transition: background 0.2s; }
+    .hero-cta:hover { background: #C95E0A; }
+    .hero-stats { display: flex; justify-content: center; gap: 48px; margin-top: 56px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .hero-stat { text-align: center; }
+    .hero-stat .num { font-size: 38px; font-weight: 800; color: var(--teal); }
+    .hero-stat .label { font-size: 13px; color: #A8C4C4; margin-top: 4px; }
+
+    /* SECTIONS */
+    section { padding: 72px 40px; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .section-tag { display: inline-block; color: var(--teal-dark); font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; }
+    h2 { font-size: 34px; font-weight: 800; color: var(--dark); margin-bottom: 16px; }
+    h2 span { color: var(--teal-dark); }
+    .intro-text { font-size: 17px; color: var(--grey); max-width: 700px; margin-bottom: 40px; line-height: 1.8; }
+
+    /* CHALLENGE */
+    .challenge { background: var(--light); }
+    .challenge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+    .challenge-content p { color: var(--mid); font-size: 16px; line-height: 1.8; margin-bottom: 24px; }
+    .pain-points { display: flex; flex-direction: column; gap: 16px; }
+    .pain-point { display: flex; align-items: flex-start; gap: 14px; background: var(--white); padding: 18px; border-radius: 10px; border-left: 4px solid var(--orange); }
+    .pain-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+    .pain-point strong { display: block; font-size: 14px; color: var(--dark); margin-bottom: 4px; }
+    .pain-point p { font-size: 13px; color: var(--grey); margin: 0; line-height: 1.5; }
+
+    /* CHART SECTIONS */
+    .charts-section { background: var(--white); }
+    .charts-intro { text-align: center; margin-bottom: 56px; }
+    .charts-intro h2 { margin-bottom: 12px; }
+    .charts-intro p { color: var(--grey); font-size: 16px; max-width: 620px; margin: 0 auto; }
+    .chart-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 28px; margin-bottom: 28px; }
+    .chart-grid-2 { display: grid; grid-template-columns: 3fr 2fr; gap: 28px; }
+    .chart-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+    }
+    .chart-card.full { grid-column: 1 / -1; }
+    .chart-card h3 { font-size: 16px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+    .chart-card .chart-sub { font-size: 13px; color: var(--grey); margin-bottom: 20px; }
+    .chart-wrapper { position: relative; }
+    .chart-wrapper.tall { height: 280px; }
+    .chart-wrapper.med { height: 240px; }
+    .chart-wrapper.short { height: 200px; }
+
+    /* INSIGHT TAGS */
+    .chart-insight {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--teal-light);
+      color: var(--teal-dark);
+      font-size: 12px; font-weight: 600;
+      padding: 6px 12px; border-radius: 20px;
+      margin-top: 14px;
+    }
+    .chart-insight.orange { background: var(--orange-light); color: var(--orange); }
+
+    /* APPROACH */
+    .approach { background: var(--light); }
+    .approach-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .approach-card {
+      background: var(--white);
+      border-radius: 14px;
+      padding: 28px;
+      border-top: 4px solid var(--teal);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+    .approach-card .step-num { font-size: 12px; font-weight: 700; color: var(--teal-dark); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+    .approach-card h3 { font-size: 17px; font-weight: 700; color: var(--dark); margin-bottom: 10px; }
+    .approach-card p { font-size: 14px; color: var(--grey); line-height: 1.7; }
+
+    /* WHY */
+    .why { background: var(--dark); }
+    .why h2 { color: var(--white); }
+    .why h2 span { color: var(--teal); }
+    .why-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 40px; }
+    .why-card { text-align: center; padding: 28px 20px; background: rgba(255,255,255,0.05); border-radius: 14px; border: 1px solid rgba(29,206,206,0.15); }
+    .why-card .icon { font-size: 36px; margin-bottom: 14px; }
+    .why-card strong { display: block; color: var(--teal); font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .why-card p { color: #A8C4C4; font-size: 13px; line-height: 1.6; }
+
+    /* WHO */
+    .who { background: var(--white); }
+    .sectors { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+    .sector-pill {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 20px;
+      background: var(--teal-light);
+      color: var(--teal-dark);
+      border-radius: 30px;
+      font-size: 14px; font-weight: 600;
+    }
+
+    /* CTA */
+    .cta-section {
+      background: linear-gradient(135deg, var(--teal-dark) 0%, #0D9090 100%);
+      padding: 72px 40px;
+      text-align: center;
+    }
+    .cta-section h2 { color: var(--white); font-size: 36px; margin-bottom: 14px; }
+    .cta-section p { color: rgba(255,255,255,0.85); font-size: 18px; max-width: 520px; margin: 0 auto 36px; }
+    .cta-btn { display: inline-block; background: var(--orange); color: var(--white); padding: 18px 44px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 17px; }
+    .cta-btn:hover { background: #C95E0A; }
+
+    /* FOOTER */
+    footer { background: #111D1D; padding: 28px 40px; text-align: center; }
+    footer p { color: #5A7A7A; font-size: 13px; }
+    footer span { color: var(--teal); }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Sustain<span>Zone</span></div>
+  <div class="nav-links">
+    <a href="#">Carbon Reduction</a>
+    <a href="#">EPR Compliance</a>
+    <a href="#">EUDR</a>
+    <a href="#">About</a>
+    <a href="#">Contact</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">🌍 Net Zero Strategy</div>
+  <h1>Practical Carbon Reduction Plans<br>That Drive <em>Real Results</em></h1>
+  <p>Expert-led decarbonisation strategies for SMEs — from carbon footprint baselining to validated Net Zero roadmaps.</p>
+  <a href="#contact" class="hero-cta">Book a Free Carbon Strategy Consultation →</a>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="num">20+</div><div class="label">Years Project Management Experience</div></div>
+    <div class="hero-stat"><div class="num">SBTi</div><div class="label">Aligned Target Setting</div></div>
+    <div class="hero-stat"><div class="num">Scope<br>1·2·3</div><div class="label">Full Emissions Coverage</div></div>
+    <div class="hero-stat"><div class="num">2050</div><div class="label">Net Zero Pathway Support</div></div>
+  </div>
+</div>
+
+<!-- THE CHALLENGE -->
+<section class="challenge">
+  <div class="container">
+    <div class="challenge-grid">
+      <div class="challenge-content">
+        <div class="section-tag">The Challenge</div>
+        <h2>The Regulatory Pressure Is <span>Real</span></h2>
+        <p>With increasing regulatory pressure, supply chain requirements, and stakeholder expectations, businesses of all sizes need credible carbon reduction plans. But navigating frameworks like SBTi, GHG Protocol, and SECR can be overwhelming — especially for SMEs without dedicated sustainability teams.</p>
+        <p>The path to Net Zero requires more than good intentions. It demands a structured, measurable approach — backed by science and built for real-world implementation.</p>
+      </div>
+      <div class="pain-points">
+        <div class="pain-point">
+          <div class="pain-icon">📋</div>
+          <div><strong>Framework Complexity</strong><p>SBTi, GHG Protocol, SECR — navigating multiple overlapping standards without in-house expertise.</p></div>
+        </div>
+        <div class="pain-point">
+          <div class="pain-icon">🔍</div>
+          <div><strong>Scope 3 Visibility</strong><p>Supply chain emissions account for up to 70% of a company's carbon footprint — and are the hardest to measure.</p></div>
+        </div>
+        <div class="pain-point">
+          <div class="pain-icon">⏱️</div>
+          <div><strong>Regulatory Deadlines</strong><p>SECR, TCFD, and incoming CSRD obligations are tightening disclosure requirements year on year.</p></div>
+        </div>
+        <div class="pain-point">
+          <div class="pain-icon">💰</div>
+          <div><strong>Cost of Inaction</strong><p>Supply chain exclusions, rising carbon prices, and reputational damage all increase with every year of delay.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHARTS SECTION -->
+<section class="charts-section">
+  <div class="container">
+    <div class="charts-intro">
+      <div class="section-tag">Data & Insights</div>
+      <h2>The Business Case for <span>Acting Now</span></h2>
+      <p>Science-based data that illustrates the decarbonisation opportunity and the cost of inaction for SMEs across UK industries.</p>
+    </div>
+
+    <!-- Row 1: Full-width Net Zero Trajectory -->
+    <div style="margin-bottom: 28px;">
+      <div class="chart-card full">
+        <h3>Net Zero Emissions Trajectory</h3>
+        <div class="chart-sub">Illustrative SME decarbonisation pathway — baseline to Net Zero 2050 (aligned to 1.5°C SBTi science-based targets)</div>
+        <div class="chart-wrapper tall">
+          <canvas id="netZeroChart"></canvas>
+        </div>
+        <div style="display:flex; gap:12px; margin-top:14px; flex-wrap:wrap;">
+          <span class="chart-insight">✅ 50% reduction milestone by 2030</span>
+          <span class="chart-insight">✅ 75% reduction milestone by 2040</span>
+          <span class="chart-insight orange">⚠️ Carbon offsets close the final 10–15% gap</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Two charts side by side -->
+    <div class="chart-grid-2" style="margin-bottom: 28px;">
+      <div class="chart-card">
+        <h3>Decarbonisation Lever Impact</h3>
+        <div class="chart-sub">Estimated % emissions reduction achievable per lever for a typical UK SME</div>
+        <div class="chart-wrapper" style="height:260px;">
+          <canvas id="leverChart"></canvas>
+        </div>
+        <span class="chart-insight">💡 Energy efficiency delivers the fastest ROI</span>
+      </div>
+      <div class="chart-card">
+        <h3>Typical Scope Emissions Breakdown</h3>
+        <div class="chart-sub">Average SME carbon footprint split across Scope 1, 2 &amp; 3 categories</div>
+        <div class="chart-wrapper" style="height:260px;">
+          <canvas id="scopeChart"></canvas>
+        </div>
+        <span class="chart-insight orange">⚠️ Scope 3 often exceeds 60% of total footprint</span>
+      </div>
+    </div>
+
+    <!-- Row 3: Carbon price & compliance cost -->
+    <div class="chart-grid-3">
+      <div class="chart-card" style="grid-column: span 2;">
+        <h3>UK Carbon Price Trajectory</h3>
+        <div class="chart-sub">UK Emissions Trading Scheme (UK ETS) carbon price trend and projected range to 2030 (£/tCO₂e)</div>
+        <div class="chart-wrapper" style="height:220px;">
+          <canvas id="carbonPriceChart"></canvas>
+        </div>
+        <span class="chart-insight orange">📈 Early movers lock in lower carbon costs</span>
+      </div>
+      <div class="chart-card">
+        <h3>Sectors We Support</h3>
+        <div class="chart-sub">Spread of SustainZone client engagements by sector</div>
+        <div class="chart-wrapper" style="height:220px;">
+          <canvas id="sectorChart"></canvas>
+        </div>
+        <span class="chart-insight">🏭 Cross-sector expertise</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- OUR APPROACH -->
+<section class="approach">
+  <div class="container">
+    <div class="section-tag">Our Approach</div>
+    <h2>How SustainZone <span>Delivers Results</span></h2>
+    <p class="intro-text">We deliver practical, data-driven carbon reduction plans tailored to your business — combining technical expertise with real-world implementation experience.</p>
+    <div class="approach-grid">
+      <div class="approach-card">
+        <div class="step-num">Step 01</div>
+        <h3>🔬 Carbon Footprint Baselining</h3>
+        <p>Comprehensive Scope 1, 2 & 3 emissions measurement aligned to the GHG Protocol. Your baseline is the foundation of everything that follows.</p>
+      </div>
+      <div class="approach-card">
+        <div class="step-num">Step 02</div>
+        <h3>📊 Decarbonisation Strategy</h3>
+        <p>Prioritised, costed reduction pathways with clear milestones. We identify the levers with the highest impact and best ROI for your specific operations.</p>
+      </div>
+      <div class="approach-card">
+        <div class="step-num">Step 03</div>
+        <h3>🎯 SBTi Alignment & Validation</h3>
+        <p>Target setting and rebaseline support following acquisitions, mergers, or organic growth — keeping your commitments credible and audit-ready.</p>
+      </div>
+      <div class="approach-card">
+        <div class="step-num">Step 04</div>
+        <h3>🗺️ Net Zero Roadmaps</h3>
+        <p>Credible, science-based strategies with interim targets. Not just a document — a living plan that adapts as your business grows.</p>
+      </div>
+      <div class="approach-card">
+        <div class="step-num">Step 05</div>
+        <h3>📝 SECR & Energy Reporting</h3>
+        <p>Regulatory compliance reporting for Streamlined Energy & Carbon Reporting obligations — accurate, on time, and defensible.</p>
+      </div>
+      <div class="approach-card">
+        <div class="step-num">Step 06</div>
+        <h3>📡 Ongoing Monitoring</h3>
+        <p>Technology-enabled tracking and annual reporting. We stay with you through the journey — not just the kickoff.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY SUSTAINZONE -->
+<section class="why">
+  <div class="container">
+    <div class="section-tag" style="color:var(--teal);">Why SustainZone</div>
+    <h2>Expertise That Goes <span>Beyond the Report</span></h2>
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="icon">🏆</div>
+        <strong>RICS Chartered Expertise</strong>
+        <p>Professional accreditation underpins the rigour of every carbon assessment and strategy we deliver.</p>
+      </div>
+      <div class="why-card">
+        <div class="icon">⚙️</div>
+        <strong>Real-World Implementation</strong>
+        <p>20+ years of project management experience means our plans are built to be executed, not filed away.</p>
+      </div>
+      <div class="why-card">
+        <div class="icon">📐</div>
+        <strong>Science-Based Methods</strong>
+        <p>GHG Protocol, SBTi, and ISO 14064 compliance as standard — your numbers will stand up to scrutiny.</p>
+      </div>
+      <div class="why-card">
+        <div class="icon">🔗</div>
+        <strong>End-to-End Support</strong>
+        <p>From first baseline measurement to verified Net Zero claim — we're with you at every stage.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHO WE WORK WITH -->
+<section class="who">
+  <div class="container">
+    <div class="section-tag">Who We Work With</div>
+    <h2>Supporting Organisations at <span>Every Stage</span></h2>
+    <p class="intro-text">From aerodrome operators developing their first carbon footprint reports to technology companies rebaselining SBTi targets post-acquisition, we support organisations at every stage of their decarbonisation journey.</p>
+    <div class="sectors">
+      <div class="sector-pill">✈️ Aviation & Aerodromes</div>
+      <div class="sector-pill">🏗️ Construction</div>
+      <div class="sector-pill">🏥 Healthcare</div>
+      <div class="sector-pill">👗 Fashion & Apparel</div>
+      <div class="sector-pill">💻 Technology</div>
+      <div class="sector-pill">🏭 Manufacturing</div>
+      <div class="sector-pill">🚚 Logistics</div>
+      <div class="sector-pill">🏢 Professional Services</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section" id="contact">
+  <h2>Ready to Start Your Decarbonisation Journey?</h2>
+  <p>Book a free 45-minute carbon strategy consultation with our expert team — no obligation, just clarity.</p>
+  <a href="#" class="cta-btn">Book a Free Carbon Strategy Consultation →</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2025 <span>SustainZone</span>. All rights reserved. | Helping businesses build credible paths to Net Zero.</p>
+</footer>
+
+<script>
+// ─── CHART DEFAULTS ───────────────────────────────────────
+Chart.defaults.font.family = "'Segoe UI', Arial, sans-serif";
+Chart.defaults.color = '#6B7C7C';
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+
+const TEAL      = '#1DCECE';
+const TEAL_DARK = '#13A8A8';
+const TEAL_MID  = '#7DDEDE';
+const TEAL_LIGHT= 'rgba(29,206,206,0.15)';
+const ORANGE    = '#E87214';
+const ORANGE_L  = 'rgba(232,114,20,0.18)';
+const DARK      = '#1C2B2B';
+const GREY      = '#A8C4C4';
+
+// ─── 1. NET ZERO TRAJECTORY ─────────────────────────────
+const years = [2024,2025,2026,2027,2028,2029,2030,2032,2034,2036,2038,2040,2042,2044,2046,2048,2050];
+const baseline = 1000;
+// Science-based decline: ~7% per year initially then steepening
+const sciencePath = [1000,960,915,865,810,750,688,595,500,410,330,260,200,155,120,95,75];
+const bau         = [1000,1015,1028,1042,1056,1070,1085,1112,1140,1165,1192,1220,1250,1280,1310,1342,1375];
+const residual    = sciencePath.map((v,i) => i === years.length-1 ? 75 : null);
+
+new Chart(document.getElementById('netZeroChart'), {
+  type: 'line',
+  data: {
+    labels: years,
+    datasets: [
+      {
+        label: 'Business As Usual',
+        data: bau,
+        borderColor: ORANGE,
+        backgroundColor: 'rgba(232,114,20,0.08)',
+        borderWidth: 2,
+        borderDash: [6,4],
+        fill: false,
+        tension: 0.3,
+        pointRadius: 0,
+      },
+      {
+        label: 'Science-Based Pathway (SBTi 1.5°C)',
+        data: sciencePath,
+        borderColor: TEAL,
+        backgroundColor: 'rgba(29,206,206,0.12)',
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+        pointRadius: [5,0,0,0,0,0,8,0,0,0,0,8,0,0,0,0,10],
+        pointBackgroundColor: [TEAL,'transparent','transparent','transparent','transparent','transparent',TEAL,'transparent','transparent','transparent','transparent',TEAL,'transparent','transparent','transparent','transparent','#FFFFFF'],
+        pointBorderColor: [TEAL,'','','','','',TEAL,'','','','',TEAL,'','','','',TEAL],
+        pointBorderWidth: 2,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { position: 'top' },
+      tooltip: {
+        callbacks: {
+          label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y} tCO₂e`,
+          afterBody: ctx => {
+            if (ctx[0]?.label === 2030) return ['→ Interim Target: -50% from baseline'];
+            if (ctx[0]?.label === 2040) return ['→ Interim Target: -75% from baseline'];
+            if (ctx[0]?.label === 2050) return ['→ Net Zero: Residual offsets only'];
+          }
+        }
+      },
+      annotation: {}
+    },
+    scales: {
+      x: { grid: { color: 'rgba(0,0,0,0.05)' }, title: { display: true, text: 'Year' } },
+      y: {
+        grid: { color: 'rgba(0,0,0,0.05)' },
+        title: { display: true, text: 'Emissions (tCO₂e)' },
+        min: 0,
+        ticks: { callback: v => v + ' t' }
+      }
+    }
+  }
+});
+
+// ─── 2. DECARBONISATION LEVER IMPACT ──────────────────────
+new Chart(document.getElementById('leverChart'), {
+  type: 'bar',
+  data: {
+    labels: [
+      'Supply Chain\nEngagement',
+      'Renewable\nEnergy',
+      'Energy\nEfficiency',
+      'Fleet\nElectrification',
+      'Process\nOptimisation',
+      'Business\nTravel'
+    ],
+    datasets: [{
+      label: 'Potential % Reduction',
+      data: [35, 28, 22, 18, 12, 8],
+      backgroundColor: [
+        TEAL, TEAL_MID, 'rgba(29,206,206,0.6)', 'rgba(29,206,206,0.45)',
+        ORANGE, 'rgba(232,114,20,0.5)'
+      ],
+      borderRadius: 6,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: c => `Up to ${c.parsed.x}% reduction potential` } }
+    },
+    scales: {
+      x: {
+        grid: { color: 'rgba(0,0,0,0.05)' },
+        ticks: { callback: v => v + '%' },
+        max: 40,
+        title: { display: true, text: 'Emissions Reduction Potential (%)' }
+      },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+// ─── 3. SCOPE DOUGHNUT ────────────────────────────────────
+new Chart(document.getElementById('scopeChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Scope 3 (Supply Chain & Value Chain)', 'Scope 2 (Purchased Energy)', 'Scope 1 (Direct Operations)'],
+    datasets: [{
+      data: [62, 23, 15],
+      backgroundColor: [TEAL, TEAL_MID, ORANGE],
+      borderColor: ['#fff','#fff','#fff'],
+      borderWidth: 3,
+      hoverOffset: 8,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '68%',
+    plugins: {
+      legend: { position: 'bottom', labels: { padding: 14, boxWidth: 12, font: { size: 12 } } },
+      tooltip: { callbacks: { label: c => ` ${c.label.split('(')[0].trim()}: ${c.parsed}%` } }
+    }
+  }
+});
+
+// ─── 4. CARBON PRICE TRAJECTORY ──────────────────────────
+const priceYears = [2020,2021,2022,2023,2024,2025,2026,2027,2028,2029,2030];
+new Chart(document.getElementById('carbonPriceChart'), {
+  type: 'line',
+  data: {
+    labels: priceYears,
+    datasets: [
+      {
+        label: 'UK ETS Actual/Forecast (£/tCO₂e)',
+        data: [16, 42, 68, 52, 44, 48, 56, 65, 78, 95, 115],
+        borderColor: TEAL,
+        backgroundColor: 'rgba(29,206,206,0.12)',
+        fill: true,
+        borderWidth: 3,
+        tension: 0.4,
+        pointRadius: 4,
+        pointBackgroundColor: TEAL,
+      },
+      {
+        label: 'HM Treasury Central Projection',
+        data: [null,null,null,null,null,null,60, 72, 87, 100, 120],
+        borderColor: ORANGE,
+        borderDash: [5,4],
+        fill: false,
+        borderWidth: 2,
+        tension: 0.3,
+        pointRadius: 3,
+        pointBackgroundColor: ORANGE,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top' },
+      tooltip: { callbacks: { label: c => `${c.dataset.label}: £${c.parsed.y}/tCO₂e` } }
+    },
+    scales: {
+      x: { grid: { color: 'rgba(0,0,0,0.04)' } },
+      y: {
+        grid: { color: 'rgba(0,0,0,0.04)' },
+        ticks: { callback: v => '£' + v },
+        min: 0,
+        title: { display: true, text: '£ per tCO₂e' }
+      }
+    }
+  }
+});
+
+// ─── 5. SECTOR DOUGHNUT ───────────────────────────────────
+new Chart(document.getElementById('sectorChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Construction', 'Aviation', 'Healthcare', 'Fashion', 'Technology', 'Other'],
+    datasets: [{
+      data: [28, 18, 16, 14, 14, 10],
+      backgroundColor: [TEAL, TEAL_MID, ORANGE, 'rgba(29,206,206,0.5)', 'rgba(232,114,20,0.6)', '#B0CCCC'],
+      borderColor: '#fff',
+      borderWidth: 3,
+      hoverOffset: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '60%',
+    plugins: {
+      legend: { position: 'bottom', labels: { padding: 10, boxWidth: 10, font: { size: 11 } } },
+      tooltip: { callbacks: { label: c => ` ${c.label}: ${c.parsed}%` } }
+    }
+  }
+});
+</script>
+</body>
+</html>
