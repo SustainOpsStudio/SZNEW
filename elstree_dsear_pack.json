@@ -1,0 +1,114 @@
+{
+  "schema": "elstree-h2-dsear-pack/0.9",
+  "aerodrome": {
+    "icao": "EGTR",
+    "name": "Elstree Aerodrome",
+    "category": 1,
+    "h2_zone_xy": [
+      500.0,
+      565.0
+    ],
+    "wind_rose": null,
+    "obstacles": null,
+    "midas_station": "ROTHAMSTED"
+  },
+  "framework_version": "0.9-sandbox",
+  "inputs": {
+    "system": "GH2_350",
+    "scenario": "leak",
+    "orifice_mm": 3.0,
+    "cd": 0.85,
+    "inventory_kg": 150.0,
+    "wind_ms": 4.0,
+    "wind_dir_deg": 230.0,
+    "stability": "D",
+    "T_amb_C": 12.0,
+    "release_height_m": 1.2
+  },
+  "system": {
+    "P0_bar": 350.0,
+    "T0_K": 288.0,
+    "kind": "gaseous",
+    "label": "350 bar GH2 mobile refueller"
+  },
+  "scenario": {
+    "label": "Chronic small leak",
+    "freq_per_yr": 0.012,
+    "orifice_default_mm": 1.0,
+    "cd_default": 0.62
+  },
+  "hazard_result": {
+    "mass_rate_kgs": 0.1324463237209969,
+    "rho_jet_kgm3": 0.08530694841827911,
+    "deff_m": 0.04094885307090049,
+    "distance_to_lfl_m": 20.358281165700827,
+    "distance_to_half_lfl_m": 41.50351236487423,
+    "distance_to_ufl_m": 0.3407956304833297,
+    "plume_rise_at_lfl_m": 7.264860706273921,
+    "overpressure_25m_mbar": 4.605215791276603,
+    "dsear_zone0_m": 0.3,
+    "dsear_zone1_m": 22.39410928227091,
+    "dsear_zone2_m": 51.87939045609279,
+    "inventory_depletion_s": 1132.5342658508255,
+    "lh2_pool_radius_m": null,
+    "notes": "GH2 sonic jet; Schefer/Birch correlation"
+  },
+  "qra_result": {
+    "individual_risk_operator": 9.603944487290172e-05,
+    "individual_risk_public_boundary": 6.120178045514229e-06,
+    "societal_risk_FN": 0.00019338109204635994,
+    "weighted_lfl_distance_m": 11.3551414006268,
+    "scenario_contributions": {
+      "leak": {
+        "scenario_label": "Chronic small leak",
+        "mass_rate_kgs": 0.010734211857126544,
+        "distance_to_lfl_m": 5.795704510948745,
+        "p_ignition": 0.04797072740906687,
+        "effective_freq_per_yr": 0.0005756487289088025,
+        "individual_risk_operator": 2.932493056326961e-05,
+        "individual_risk_public": 1.7763146096348087e-25
+      },
+      "connect": {
+        "scenario_label": "Refuelling connection failure",
+        "mass_rate_kgs": 0.9418405242382002,
+        "distance_to_lfl_m": 54.288749775202206,
+        "p_ignition": 0.22320422429452505,
+        "effective_freq_per_yr": 6.696126728835752e-05,
+        "individual_risk_operator": 6.47274015366476e-05,
+        "individual_risk_public": 5.836426988854542e-06
+      },
+      "rupture": {
+        "scenario_label": "Catastrophic full-bore rupture",
+        "mass_rate_kgs": 9.738700273602715,
+        "distance_to_lfl_m": 174.5708207925539,
+        "p_ignition": 0.39872879147463214,
+        "effective_freq_per_yr": 1.9936439573731607e-06,
+        "individual_risk_operator": 1.987112772984511e-06,
+        "individual_risk_public": 2.8375105665968673e-07
+      }
+    }
+  },
+  "ml_surrogate": {
+    "coefficients": {
+      "intercept": -0.495,
+      "logP": 0.5,
+      "logD": 1.0,
+      "logU": -0.1,
+      "stab": 0.05,
+      "T": -0.003
+    },
+    "r2": 0.974,
+    "log_rmse": 0.087,
+    "current_lfl_prediction_m": 20.321196612098834
+  },
+  "compliance": {
+    "DSEAR_reg5": "Risk assessment evidenced via this pack",
+    "DSEAR_reg6": "Elimination/reduction \u2014 inventory cap, segmented storage, outdoor siting",
+    "DSEAR_reg7": "Zone classification per EI 15 / IGC 75 / HSE RR1159",
+    "DSEAR_reg7_2": "ATEX: gas group IIC, temp class T1, Ex equipment requirements stated",
+    "DSEAR_reg8": "Mitigation: EFV, point detectors @ 0.25*LFL, thermal isolation",
+    "DSEAR_reg9": "Training/information \u2014 site SOP cross-reference",
+    "CAP_168": "Hydrogen provisions absent; pack proposed as supplementary evidence",
+    "EN_17127": "Aligned (deviation log appended where applicable)"
+  }
+}
