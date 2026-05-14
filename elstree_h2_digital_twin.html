@@ -2041,6 +2041,28 @@ resizeCanvas();
 updateWindArrow();
 recompute();
 renderRegister();
+  // ---------- Auto-load DSEAR pack ----------
+fetch('./elstree_dsear_pack.json', { cache: 'no-store' })
+  .then(r => r.ok ? r.json() : Promise.reject('HTTP ' + r.status))
+  .then(pack => {
+    if (pack && pack.inputs) {
+      Object.assign(state, pack.inputs);
+      // Sync any matching DOM controls (inputs/selects with id === key)
+      Object.keys(pack.inputs).forEach(k => {
+        const el = document.getElementById(k);
+        if (el && 'value' in el) {
+          el.value = pack.inputs[k];
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+      window.__loaded_pack = pack;
+      recompute();
+      renderRegister();
+      if (typeof toast === 'function') toast('DSEAR pack loaded.');
+    }
+  })
+  .catch(err => console.warn('DSEAR pack not loaded:', err));
 
 </script>
 </body>
