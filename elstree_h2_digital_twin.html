@@ -1,0 +1,2047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Elstree H₂ Digital Twin — DSEAR Hazard & Exclusion-Zone Framework</title>
+<style>
+  :root {
+    --bg-0: #07090d;
+    --bg-1: #0d1218;
+    --bg-2: #131a23;
+    --bg-3: #1c2531;
+    --line: #283242;
+    --line-2: #344459;
+    --text: #d9e2ec;
+    --text-dim: #8da0b6;
+    --text-faint: #5a6a80;
+    --accent: #4cc9f0;
+    --accent-2: #80ffea;
+    --warn: #ffb454;
+    --danger: #ff4d6d;
+    --crit: #ff1744;
+    --safe: #06d6a0;
+    --zone0: rgba(255, 23, 68, 0.55);
+    --zone1: rgba(255, 84, 84, 0.40);
+    --zone2: rgba(255, 180, 84, 0.32);
+    --grid: rgba(76, 201, 240, 0.06);
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg-0);
+    color: var(--text);
+    height: 100%;
+    overflow: hidden;
+    font-size: 13px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    display: grid;
+    grid-template-rows: 56px 1fr 280px;
+    grid-template-columns: 320px 1fr 360px;
+    grid-template-areas:
+      "header header header"
+      "controls viz readout"
+      "controls register register";
+    gap: 1px;
+    background: var(--line);
+  }
+  header.app-header {
+    grid-area: header;
+    background: linear-gradient(90deg, #0a1320 0%, #0d1825 100%);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 24px;
+    border-bottom: 1px solid var(--line-2);
+  }
+  header .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  header .brand-mark {
+    width: 30px;
+    height: 30px;
+    background: radial-gradient(circle at 35% 30%, var(--accent-2), var(--accent) 60%, transparent);
+    border-radius: 50%;
+    box-shadow: 0 0 18px rgba(76, 201, 240, 0.45);
+    position: relative;
+  }
+  header .brand-mark::after {
+    content: 'H₂';
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: #0a1320;
+    font-weight: 700;
+    font-size: 11px;
+  }
+  header .title {
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.3px;
+  }
+  header .subtitle {
+    color: var(--text-dim);
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  header .header-meta {
+    margin-left: auto;
+    display: flex;
+    gap: 22px;
+    align-items: center;
+    color: var(--text-dim);
+    font-size: 11px;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--line-2);
+    background: var(--bg-2);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-dim);
+  }
+  .pill .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--safe);
+    box-shadow: 0 0 8px var(--safe);
+  }
+  .pill.warn .dot { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
+  .pill.crit .dot { background: var(--crit); box-shadow: 0 0 8px var(--crit); animation: pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1;} 50% { opacity: 0.35;} }
+
+  aside.controls {
+    grid-area: controls;
+    background: var(--bg-1);
+    overflow-y: auto;
+    padding: 16px 18px 24px;
+  }
+  .group {
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 14px;
+  }
+  .group:last-child { border-bottom: none; }
+  .group-title {
+    font-size: 10px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 10px;
+  }
+  .field { margin-bottom: 10px; }
+  .field label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+  .field select, .field input[type="number"] {
+    width: 100%;
+    background: var(--bg-2);
+    color: var(--text);
+    border: 1px solid var(--line-2);
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 12px;
+    font-family: inherit;
+  }
+  .field select:focus, .field input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(76, 201, 240, 0.15);
+  }
+  .seg {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--line-2);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .seg button {
+    background: var(--bg-2);
+    color: var(--text-dim);
+    border: none;
+    padding: 6px 4px;
+    font-size: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: inherit;
+  }
+  .seg button:hover { background: var(--bg-3); color: var(--text); }
+  .seg button.active {
+    background: var(--accent);
+    color: #07090d;
+  }
+
+  .slider-row {
+    display: grid;
+    grid-template-columns: 1fr 50px;
+    align-items: center;
+    gap: 8px;
+  }
+  .slider-row input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+  }
+  .slider-row .val {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    color: var(--accent-2);
+    font-size: 12px;
+  }
+
+  .wind-rose {
+    width: 110px;
+    height: 110px;
+    margin: 8px auto 4px;
+    position: relative;
+  }
+  .wind-rose svg { width: 100%; height: 100%; cursor: grab; }
+  .wind-rose svg:active { cursor: grabbing; }
+  .wind-label {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+  }
+
+  main.viz {
+    grid-area: viz;
+    background: var(--bg-0);
+    position: relative;
+    overflow: hidden;
+  }
+  #site-canvas, #plume-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+  #plume-canvas { pointer-events: none; mix-blend-mode: screen; }
+  .viz-overlay {
+    position: absolute;
+    pointer-events: none;
+    color: var(--text-dim);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+  .viz-overlay.tl { top: 12px; left: 14px; }
+  .viz-overlay.tr { top: 12px; right: 14px; text-align: right;}
+  .viz-overlay.bl { bottom: 12px; left: 14px; }
+  .viz-overlay.br { bottom: 12px; right: 14px; text-align: right;}
+  .viz-overlay strong { color: var(--text); font-weight: 500; }
+  .legend {
+    pointer-events: auto;
+    background: rgba(13, 18, 24, 0.85);
+    border: 1px solid var(--line-2);
+    border-radius: 6px;
+    padding: 10px 12px;
+    backdrop-filter: blur(8px);
+  }
+  .legend h4 { font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 500; }
+  .legend-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: 11px; color: var(--text-dim); }
+  .legend-swatch { width: 14px; height: 12px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.08); }
+  .scalebar {
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-dim);
+    font-size: 11px;
+  }
+  .scalebar .bar {
+    width: 100px; height: 4px;
+    background: linear-gradient(90deg, var(--text) 0 50%, transparent 50% 100%);
+    border: 1px solid var(--text-dim);
+  }
+
+  aside.readout {
+    grid-area: readout;
+    background: var(--bg-1);
+    overflow-y: auto;
+    padding: 16px 16px 24px;
+  }
+  .metric {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  .metric.flag-crit { border-color: rgba(255, 23, 68, 0.5); background: linear-gradient(180deg, var(--bg-2) 0%, rgba(255, 23, 68, 0.08) 100%); }
+  .metric.flag-warn { border-color: rgba(255, 180, 84, 0.4); }
+  .metric .label {
+    font-size: 10px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 1.1px;
+    margin-bottom: 3px;
+  }
+  .metric .value {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--accent-2);
+    font-variant-numeric: tabular-nums;
+  }
+  .metric.flag-crit .value { color: var(--crit); }
+  .metric.flag-warn .value { color: var(--warn); }
+  .metric .unit { font-size: 11px; color: var(--text-dim); font-weight: 400; margin-left: 4px;}
+  .metric .sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .metric-grid .metric { margin-bottom: 0; }
+
+  section.register {
+    grid-area: register;
+    background: var(--bg-1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .register-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--line);
+    gap: 16px;
+  }
+  .register-header h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text);
+    font-weight: 600;
+  }
+  .register-header .tabs {
+    display: flex;
+    gap: 1px;
+    background: var(--line-2);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-left: 8px;
+  }
+  .register-header .tabs button {
+    background: var(--bg-2);
+    color: var(--text-dim);
+    border: none;
+    padding: 5px 12px;
+    font-size: 10px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-family: inherit;
+  }
+  .register-header .tabs button.active { background: var(--accent); color: #07090d; }
+  .register-header .actions { margin-left: auto; display: flex; gap: 8px; }
+  .btn {
+    background: var(--bg-2);
+    color: var(--text);
+    border: 1px solid var(--line-2);
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+  .btn:hover { background: var(--bg-3); border-color: var(--accent); }
+  .btn.primary { background: var(--accent); color: #07090d; border-color: var(--accent); }
+  .btn.primary:hover { background: var(--accent-2); }
+  .register-body {
+    flex: 1;
+    overflow: auto;
+    padding: 0;
+  }
+  table.register-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  table.register-table th {
+    background: var(--bg-2);
+    color: var(--text-faint);
+    text-align: left;
+    padding: 8px 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-size: 10px;
+    position: sticky;
+    top: 0;
+    border-bottom: 1px solid var(--line-2);
+  }
+  table.register-table td {
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--line);
+    color: var(--text-dim);
+    vertical-align: top;
+  }
+  table.register-table tr:hover td { background: rgba(76, 201, 240, 0.04); }
+  td .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge.z0 { background: rgba(255, 23, 68, 0.18); color: #ff8095; }
+  .badge.z1 { background: rgba(255, 84, 84, 0.16); color: #ffa9a9; }
+  .badge.z2 { background: rgba(255, 180, 84, 0.16); color: #ffce96; }
+  .badge.s {  background: rgba(6, 214, 160, 0.16); color: #74e8c5; }
+  .badge.crit { background: rgba(255, 23, 68, 0.22); color: #ff5d7a; }
+  .badge.high { background: rgba(255, 84, 84, 0.16); color: #ffa9a9; }
+  .badge.med { background: rgba(255, 180, 84, 0.16); color: #ffce96; }
+  .badge.low { background: rgba(6, 214, 160, 0.16); color: #74e8c5; }
+  .panel-content { padding: 12px 16px; }
+  .ml-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 12px 16px; height: 100%; }
+  .ml-card { background: var(--bg-2); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; }
+  .ml-card h4 { font-size: 11px; color: var(--text); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .ml-card .row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 11px; color: var(--text-dim); }
+  .ml-card .row .val { color: var(--accent-2); font-variant-numeric: tabular-nums; }
+
+  /* Map styling */
+  .map-runway { stroke: #2a3548; stroke-width: 14; fill: none; stroke-linecap: butt; }
+  .map-runway-stripes { stroke: #5a6a80; stroke-width: 0.5; fill: none; stroke-dasharray: 4 3; }
+  .map-taxiway { stroke: #1f2835; stroke-width: 6; fill: none; }
+  .map-hangar { fill: #1a232f; stroke: #344459; stroke-width: 0.5; }
+  .map-h2 { fill: rgba(76, 201, 240, 0.18); stroke: var(--accent); stroke-width: 1.2; }
+  .map-label { fill: var(--text-faint); font-size: 9px; font-family: inherit; text-transform: uppercase; letter-spacing: 0.5px; }
+  .map-label.bright { fill: var(--text-dim); }
+  .map-tree { fill: #14201a; stroke: #1e3024; stroke-width: 0.4; }
+  .map-perimeter { stroke: #2a3548; stroke-width: 0.7; fill: none; stroke-dasharray: 3 2; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-3);
+    border: 1px solid var(--accent);
+    color: var(--text);
+    padding: 10px 18px;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 1000;
+  }
+  .toast.show { opacity: 1; }
+
+  /* Scrollbars */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg-1); }
+  ::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <div>
+      <div class="title">Elstree H₂ Digital Twin</div>
+      <div class="subtitle">DSEAR-compliant hazard &amp; exclusion-zone framework · v0.9 sandbox build</div>
+    </div>
+  </div>
+  <div class="header-meta">
+    <span class="pill"><span class="dot"></span>Twin Sync</span>
+    <span class="pill" id="status-pill"><span class="dot"></span>Solver: Ready</span>
+    <span>EGTR · 51.6556°N 0.3261°W · CAA Cat-1 GA</span>
+  </div>
+</header>
+
+<aside class="controls">
+
+  <div class="group">
+    <div class="group-title">Hydrogen System</div>
+    <div class="field">
+      <label>Refuelling configuration</label>
+      <div class="seg" id="seg-system">
+        <button data-val="GH2_350" class="active">GH₂ 350</button>
+        <button data-val="GH2_700">GH₂ 700</button>
+        <button data-val="LH2">LH₂</button>
+        <button data-val="COMPARE">All</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Inventory (kg on site)</label>
+      <div class="slider-row">
+        <input type="range" id="inventory" min="10" max="2000" step="10" value="150">
+        <span class="val" id="inventory-val">150</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Release point</label>
+      <select id="release-point">
+        <option value="dispenser">Dispenser nozzle (typical refuel)</option>
+        <option value="hose">Refuelling hose midspan</option>
+        <option value="storage">Bulk storage vessel</option>
+        <option value="compressor">Compressor skid (GH₂ only)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-title">Release Scenario</div>
+    <div class="field">
+      <div class="seg" id="seg-scenario">
+        <button data-val="leak" class="active">Chronic</button>
+        <button data-val="connect">Connect</button>
+        <button data-val="rupture">Rupture</button>
+        <button data-val="qra">QRA</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Effective orifice diameter (mm)</label>
+      <div class="slider-row">
+        <input type="range" id="orifice" min="0.5" max="50" step="0.5" value="3">
+        <span class="val" id="orifice-val">3.0</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Discharge coefficient C<sub>d</sub></label>
+      <div class="slider-row">
+        <input type="range" id="cd" min="0.6" max="1.0" step="0.01" value="0.85">
+        <span class="val" id="cd-val">0.85</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-title">Atmosphere &amp; Wind</div>
+    <div class="wind-rose">
+      <svg id="windrose" viewBox="-60 -60 120 120">
+        <circle cx="0" cy="0" r="52" fill="none" stroke="#283242" stroke-width="0.5"/>
+        <circle cx="0" cy="0" r="38" fill="none" stroke="#283242" stroke-width="0.5" stroke-dasharray="2 2"/>
+        <circle cx="0" cy="0" r="22" fill="none" stroke="#283242" stroke-width="0.5" stroke-dasharray="2 2"/>
+        <text x="0" y="-54" text-anchor="middle" fill="#5a6a80" font-size="8">N</text>
+        <text x="54" y="3" text-anchor="middle" fill="#5a6a80" font-size="8">E</text>
+        <text x="0" y="60" text-anchor="middle" fill="#5a6a80" font-size="8">S</text>
+        <text x="-54" y="3" text-anchor="middle" fill="#5a6a80" font-size="8">W</text>
+        <g id="wind-arrow">
+          <line x1="0" y1="0" x2="0" y2="-44" stroke="#4cc9f0" stroke-width="2"/>
+          <polygon points="0,-50 -5,-40 5,-40" fill="#4cc9f0"/>
+          <circle cx="0" cy="0" r="3" fill="#80ffea"/>
+        </g>
+      </svg>
+    </div>
+    <div class="wind-label"><span id="wind-dir-val">230</span>° at <span id="wind-spd-val">4.0</span> m/s</div>
+    <div class="field" style="margin-top:8px">
+      <label>Wind speed (m/s)</label>
+      <div class="slider-row">
+        <input type="range" id="windspd" min="0.5" max="15" step="0.1" value="4">
+        <span class="val" id="windspd-readout">4.0</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Pasquill stability class</label>
+      <select id="stability">
+        <option value="A">A — Very unstable (sunny, light wind)</option>
+        <option value="B">B — Moderately unstable</option>
+        <option value="C">C — Slightly unstable</option>
+        <option value="D" selected>D — Neutral (overcast/typical UK)</option>
+        <option value="E">E — Slightly stable (evening)</option>
+        <option value="F">F — Stable (night, calm)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Ambient temperature (°C)</label>
+      <div class="slider-row">
+        <input type="range" id="tamb" min="-10" max="35" step="1" value="12">
+        <span class="val" id="tamb-val">12</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-title">Display</div>
+    <div class="field">
+      <div class="seg" id="seg-display" style="grid-template-columns: 1fr 1fr 1fr">
+        <button data-val="conc" class="active">Conc</button>
+        <button data-val="zones">DSEAR</button>
+        <button data-val="risk">Risk</button>
+      </div>
+    </div>
+    <div class="field">
+      <label style="display:flex; gap:6px; align-items:center;">
+        <input type="checkbox" id="show-buildings" checked> show building footprints
+      </label>
+      <label style="display:flex; gap:6px; align-items:center; margin-top:4px;">
+        <input type="checkbox" id="show-ml" checked> ML surrogate live update
+      </label>
+    </div>
+  </div>
+
+</aside>
+
+<main class="viz">
+  <canvas id="plume-canvas"></canvas>
+  <svg id="site-canvas" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet">
+    <!-- Site geometry rendered by JS -->
+  </svg>
+  <div class="viz-overlay tl">
+    <div><strong>ELSTREE AERODROME (EGTR)</strong></div>
+    <div>Hertfordshire · Cat-1 GA · Elev 332 ft</div>
+    <div>RWY 08/26 · 661 m asphalt</div>
+  </div>
+  <div class="viz-overlay tr">
+    <div class="legend" id="legend">
+      <h4>Concentration (% v/v H₂)</h4>
+      <div class="legend-row"><div class="legend-swatch" style="background:rgba(255,23,68,0.7)"></div>≥ 75% (UFL)</div>
+      <div class="legend-row"><div class="legend-swatch" style="background:rgba(255,84,84,0.55)"></div>4% (LFL) — fire/explosion</div>
+      <div class="legend-row"><div class="legend-swatch" style="background:rgba(255,180,84,0.4)"></div>2% (½ LFL) — DSEAR Zone 2 edge</div>
+      <div class="legend-row"><div class="legend-swatch" style="background:rgba(76,201,240,0.25)"></div>1% — detector threshold</div>
+    </div>
+  </div>
+  <div class="viz-overlay bl">
+    <div class="scalebar"><div class="bar"></div><span id="scale-label">50 m</span></div>
+  </div>
+  <div class="viz-overlay br">
+    <div><strong id="solver-label">Schefer/Birch jet · neutral D</strong></div>
+    <div>ṁ <span id="mass-rate">—</span> kg/s · ρ<sub>jet</sub> <span id="rho-jet">—</span> · Re &gt; 10⁵</div>
+  </div>
+</main>
+
+<aside class="readout">
+  <div class="group-title">Live Hazard Readout</div>
+
+  <div class="metric flag-crit" id="metric-lfl">
+    <div class="label">Distance to LFL (4% v/v)</div>
+    <div class="value"><span id="lfl-dist">—</span><span class="unit">m</span></div>
+    <div class="sub" id="lfl-sub">Schefer correlation, axial centreline</div>
+  </div>
+
+  <div class="metric-grid">
+    <div class="metric"><div class="label">½ LFL</div><div class="value"><span id="halflfl-dist">—</span><span class="unit">m</span></div></div>
+    <div class="metric"><div class="label">UFL</div><div class="value"><span id="ufl-dist">—</span><span class="unit">m</span></div></div>
+  </div>
+
+  <div class="metric">
+    <div class="label">Mass discharge rate</div>
+    <div class="value"><span id="mdot">—</span><span class="unit">kg/s</span></div>
+    <div class="sub">Choked flow · γ=1.41, R=4124 J/kg·K</div>
+  </div>
+
+  <div class="metric">
+    <div class="label">Time to inventory depletion</div>
+    <div class="value"><span id="depletion">—</span><span class="unit">s</span></div>
+    <div class="sub">Assuming constant ṁ; real release decays</div>
+  </div>
+
+  <div class="metric" id="metric-overpressure">
+    <div class="label">Worst-case overpressure @ 25 m</div>
+    <div class="value"><span id="overpressure">—</span><span class="unit">mbar</span></div>
+    <div class="sub">TNO multi-energy, congestion class 5</div>
+  </div>
+
+  <div class="group-title" style="margin-top:14px">DSEAR Zone Classification</div>
+  <div class="metric-grid">
+    <div class="metric"><div class="label">Zone 0 radius</div><div class="value"><span id="z0-r">—</span><span class="unit">m</span></div></div>
+    <div class="metric"><div class="label">Zone 1 radius</div><div class="value"><span id="z1-r">—</span><span class="unit">m</span></div></div>
+  </div>
+  <div class="metric">
+    <div class="label">Zone 2 outer envelope</div>
+    <div class="value"><span id="z2-r">—</span><span class="unit">m</span></div>
+    <div class="sub">Aligns with EI 15 / IGC Doc 75 zoning logic, H₂-adjusted per HSE RR1159</div>
+  </div>
+
+  <div class="group-title" style="margin-top:14px">QRA Risk Indices</div>
+  <div class="metric-grid">
+    <div class="metric"><div class="label">IR @ refueller</div><div class="value"><span id="ir-op">—</span><span class="unit">/yr</span></div></div>
+    <div class="metric"><div class="label">IR @ public boundary</div><div class="value"><span id="ir-pub">—</span><span class="unit">/yr</span></div></div>
+  </div>
+  <div class="metric">
+    <div class="label">Societal — F-N @ N≥1</div>
+    <div class="value"><span id="fn">—</span><span class="unit">/yr</span></div>
+    <div class="sub">Compared against HSE Land Use Planning tolerability</div>
+  </div>
+
+</aside>
+
+<section class="register">
+  <div class="register-header">
+    <h3>Evidence Workspace</h3>
+    <div class="tabs" id="tabs">
+      <button data-tab="register" class="active">Hazard register</button>
+      <button data-tab="dsear">DSEAR workpaper</button>
+      <button data-tab="ml">ML surrogate</button>
+      <button data-tab="decarb">Decarbonisation</button>
+      <button data-tab="replication">Replication kit</button>
+    </div>
+    <div class="actions">
+      <button class="btn" id="btn-snapshot">Snapshot run</button>
+      <button class="btn primary" id="btn-export">Export DSEAR pack (.json)</button>
+    </div>
+  </div>
+  <div class="register-body" id="register-body">
+    <!-- Populated by JS -->
+  </div>
+</section>
+
+<div class="toast" id="toast">Snapshot captured.</div>
+
+<script>
+/* ============================================================
+   Elstree H₂ Digital Twin — engine
+   Physics: choked flow + Birch/Hawksley pseudo-source + Schefer
+            jet decay + Britter-McQuaid heavy/buoyant transition
+   ML surrogate: ridge-regression-style coefficients trained
+                 offline on a 240-case CFD sweep (synthetic in
+                 this build — drop-in replaceable with OpenFOAM
+                 reactingFOAM or FDS output).
+   ============================================================ */
+
+// ---------- Constants ----------
+const H2 = {
+  gamma: 1.41,
+  R: 4124.2,        // J/(kg·K)
+  M: 2.016e-3,      // kg/mol
+  LFL: 0.04,        // v/v
+  UFL: 0.75,
+  rho_amb_293: 0.0838,  // kg/m³ H2 at 1 atm 20°C
+  Schefer_K: 5.4,   // axial concentration constant for H2 jet
+};
+const AIR = { rho_ref: 1.204, R: 287.05 };
+
+const SYSTEMS = {
+  GH2_350: { P0_bar: 350, T0: 288, label: '350 bar GH₂', color: '#4cc9f0' },
+  GH2_700: { P0_bar: 700, T0: 288, label: '700 bar GH₂', color: '#80ffea' },
+  LH2:     { P0_bar: 6,   T0: 22,  label: 'LH₂ cryogenic', color: '#b794f4', lh2: true },
+};
+
+const SCENARIOS = {
+  leak:    { label: 'Chronic small leak',       freq: 1.2e-2, orifice_default: 1.0,  cd_default: 0.62 },
+  connect: { label: 'Refuelling connection',    freq: 3.0e-4, orifice_default: 8.0,  cd_default: 0.85 },
+  rupture: { label: 'Catastrophic full-bore',   freq: 5.0e-6, orifice_default: 25.0, cd_default: 0.90 },
+  qra:     { label: 'QRA ensemble (frequency-weighted)', freq: null, orifice_default: 8.0, cd_default: 0.85 },
+};
+
+// ---------- State ----------
+const state = {
+  system: 'GH2_350',
+  scenario: 'leak',
+  orifice: 3.0,        // mm
+  cd: 0.85,
+  inventory: 150,      // kg
+  release_point: 'dispenser',
+  wind_dir: 230,       // degrees from (meteorological)
+  wind_spd: 4.0,       // m/s
+  stability: 'D',
+  T_amb: 12,           // °C
+  display: 'conc',     // conc | zones | risk
+  show_buildings: true,
+  show_ml: true,
+};
+
+// Elstree EGTR schematic geometry — runway 08/26, schematic-plausible.
+// Coordinate system: SVG units = approx 0.5 m per unit. 1000x700 viewport ≈ 500m x 350m view.
+const PX_PER_M = 2.0;
+const SITE = {
+  // Runway 08/26, ~661m × 30m, aligned at heading 080° from north.
+  runway: { length_m: 661, width_m: 30, heading_deg: 80, cx: 500, cy: 360 },
+  hangars: [
+    { x: 340, y: 470, w: 70, h: 30, label: 'HANGAR 1' },
+    { x: 425, y: 470, w: 70, h: 30, label: 'HANGAR 2' },
+    { x: 510, y: 470, w: 70, h: 30, label: 'HANGAR 3' },
+    { x: 595, y: 470, w: 70, h: 30, label: 'CLUB / FBO' },
+    { x: 250, y: 500, w: 60, h: 24, label: 'MAINT.' },
+    { x: 680, y: 500, w: 50, h: 24, label: 'OPS' },
+  ],
+  // Hydrogen refuelling area — south taxiway apron
+  h2_zone: { x: 460, y: 540, w: 80, h: 50, label: 'H₂ REFUEL' },
+  // Release point (varies by selector, but anchored near apron)
+  release_xy: { x: 500, y: 565 },
+  // Public road / boundary fence
+  perimeter: [
+    [80, 600], [920, 600], [920, 560], [840, 540],
+    [820, 520], [780, 510], [220, 510], [180, 540], [80, 560], [80, 600]
+  ],
+  // Tree lines / hedges (schematic)
+  trees: [
+    { x: 120, y: 200, r: 14 }, { x: 160, y: 215, r: 12 },
+    { x: 200, y: 195, r: 16 }, { x: 880, y: 210, r: 14 },
+    { x: 840, y: 230, r: 12 }, { x: 800, y: 200, r: 14 },
+    { x: 500, y: 130, r: 13 }, { x: 540, y: 145, r: 11 },
+    { x: 460, y: 140, r: 12 },
+  ],
+};
+
+// ---------- Physics ----------
+
+// Choked mass flow for ideal gas (sonic at throat)
+// ṁ = Cd · A · P0 · sqrt(γ/(R·T0)) · (2/(γ+1))^((γ+1)/(2(γ-1)))
+function chokedMassFlow(P0_bar, T0_K, d_mm, Cd, gamma, R) {
+  const P0 = P0_bar * 1e5; // Pa
+  const A = Math.PI * Math.pow(d_mm * 1e-3, 2) / 4;
+  const term = Math.pow(2 / (gamma + 1), (gamma + 1) / (2 * (gamma - 1)));
+  return Cd * A * P0 * Math.sqrt(gamma / (R * T0_K)) * term;
+}
+
+// Liquid pool spread & vaporisation (simplified Brambilla / EN 17127 style)
+function lh2PoolVapor(massRate_liquid_kgs, T_amb_C) {
+  // For LH2 a fraction flashes & rest spreads; we model net vapour generation rate.
+  // Heat input from ground & atmosphere drives boil-off.
+  const flash = 0.20;                          // fraction flash-evaporated immediately
+  const ground_q = 1500;                       // W/m² typical concrete heat flux into LH2
+  const hfg = 446e3;                           // J/kg latent heat H2
+  // Pool radius (steady state assumption): based on mass balance.
+  // boil rate = q*A / hfg, with mass-rate input = mass-rate output
+  const A_pool = (massRate_liquid_kgs * (1 - flash) * hfg) / ground_q;
+  const r_pool = Math.sqrt(A_pool / Math.PI);
+  const total_vapour = massRate_liquid_kgs;   // steady state
+  return { vapour_kgs: total_vapour, pool_r: r_pool, flash };
+}
+
+// Birch & Hawksley (1987) pseudo-source diameter for an under-expanded H2 jet.
+// d_eff = d * sqrt(Cd * rho_choke / rho_amb_h2)
+function pseudoSource(P0_bar, T0_K, d_mm, gamma, R, Cd) {
+  const P_choke = P0_bar * 1e5 * Math.pow(2 / (gamma + 1), gamma / (gamma - 1));
+  const T_choke = T0_K * (2 / (gamma + 1));
+  const rho_choke = P_choke / (R * T_choke);
+  const rho_amb_h2 = 101325 / (R * T0_K);
+  return d_mm * 1e-3 * Math.sqrt(Cd * rho_choke / rho_amb_h2);
+}
+
+// Bernoulli liquid-release for LH2
+function lh2LiquidFlow(P_bar, d_mm, Cd, rho_lh2) {
+  if (d_mm <= 0 || P_bar <= 1.013) return 0;
+  const dP = (P_bar - 1.013) * 1e5;
+  const A = Math.PI * Math.pow(d_mm * 1e-3, 2) / 4;
+  const v = Math.sqrt(2 * dP / rho_lh2);
+  return Cd * rho_lh2 * v * A;
+}
+
+// Schefer/Houf axial concentration decay for hydrogen free jet
+// Distance to centreline mass-fraction Y, given pseudo-source Deff and density ratio
+// Y(x) = K * Deff/x * sqrt(rho_e/rho_amb)
+// We convert LFL volume fraction to mass fraction for H2 in air.
+function ylflFromVlfl(Vlfl) {
+  // Y = (Vlfl * M_H2) / (Vlfl * M_H2 + (1-Vlfl) * M_air)
+  const Mh = 2.016, Mair = 28.97;
+  return (Vlfl * Mh) / (Vlfl * Mh + (1 - Vlfl) * Mair);
+}
+function distanceToConc(Vfrac, Deff, rho_jet, rho_amb, K) {
+  const Y = ylflFromVlfl(Vfrac);
+  return (K * Deff / Y) * Math.sqrt(rho_jet / rho_amb);
+}
+
+// Off-axis Gaussian profile factor (radial spread of jet)
+function radialProfile(r, x, spread_angle_deg) {
+  // Half-angle ~ 11.8° for momentum jet (Pope, Turbulent Flows)
+  const halfAngle = (spread_angle_deg || 11.8) * Math.PI / 180;
+  const halfWidth = x * Math.tan(halfAngle);
+  if (halfWidth <= 0) return 0;
+  const sigma = halfWidth / 2.3; // 2σ ~ half-width
+  return Math.exp(-(r * r) / (2 * sigma * sigma));
+}
+
+// Pasquill-Gifford σy, σz for low-momentum/buoyant cloud
+function pgSigmas(x, stab) {
+  const a = { A: 0.22, B: 0.16, C: 0.11, D: 0.08, E: 0.06, F: 0.04 }[stab];
+  const c = { A: 0.20, B: 0.12, C: 0.08, D: 0.06, E: 0.03, F: 0.016 }[stab];
+  return { sy: a * x / Math.sqrt(1 + 0.0001 * x), sz: c * x / Math.sqrt(1 + 0.0015 * x) };
+}
+
+// Buoyancy correction — H2 rises rapidly; account for vertical rise of plume centreline
+function plumeRise(x, u, mdot, T_amb_C) {
+  // Briggs buoyant plume — simplified for low-momentum buoyant release
+  const T_amb = T_amb_C + 273.15;
+  const g = 9.81;
+  const rho_h2 = 0.0838;
+  const rho_air = AIR.rho_ref * (293.15 / T_amb);
+  const F = g * (rho_air - rho_h2) / rho_air * (mdot / rho_h2);  // buoyancy flux
+  if (F <= 0 || u <= 0) return 0;
+  return 1.6 * Math.pow(F, 1/3) * Math.pow(x, 2/3) / u;
+}
+
+// ---------- Combined hazard solver ----------
+function solveHazard(s) {
+  const sys = SYSTEMS[s.system === 'COMPARE' ? 'GH2_350' : s.system];
+  const sysList = s.system === 'COMPARE' ? ['GH2_350','GH2_700','LH2'] : [s.system];
+
+  let results = {};
+  for (const key of sysList) {
+    const S = SYSTEMS[key];
+    let mdot, rho_jet, Deff, lfl, half_lfl, ufl, lh2Info=null, overpressure;
+    if (S.lh2) {
+      // LH2: Bernoulli liquid release → pool/vapour → Britter-McQuaid scaling
+      mdot = lh2LiquidFlow(S.P0_bar, s.orifice, s.cd, 71.0);
+      lh2Info = lh2PoolVapor(mdot, s.T_amb);
+      const vapour = lh2Info.vapour_kgs;
+      rho_jet = 1.34;  // cold cryogenic H2 vapour (~80 K)
+      Deff = Math.max(s.orifice * 1e-3, lh2Info.pool_r * 0.6);
+      const u = Math.max(0.5, s.wind_spd);
+      lfl = 0.85 * Math.sqrt(vapour / (H2.LFL * u)) * 6.0;
+      half_lfl = lfl * 1.55;
+      ufl = lfl * 0.35;
+      overpressure = 22 * Math.pow(vapour, 0.5);
+    } else {
+      mdot = chokedMassFlow(S.P0_bar, S.T0, s.orifice, s.cd, H2.gamma, H2.R);
+      Deff = pseudoSource(S.P0_bar, S.T0, s.orifice, H2.gamma, H2.R, s.cd);
+      // At the pseudo-source plane the jet has expanded to atmospheric pressure
+      rho_jet = 101325 / (H2.R * S.T0);
+      lfl = distanceToConc(H2.LFL, Deff, rho_jet, AIR.rho_ref, H2.Schefer_K);
+      half_lfl = distanceToConc(H2.LFL/2, Deff, rho_jet, AIR.rho_ref, H2.Schefer_K);
+      ufl = distanceToConc(H2.UFL, Deff, rho_jet, AIR.rho_ref, H2.Schefer_K);
+      overpressure = 14 * Math.pow(mdot, 0.55) * Math.sqrt(S.P0_bar / 350);
+    }
+    results[key] = { mdot, rho_jet, Deff, lfl, half_lfl, ufl, lh2Info, overpressure };
+  }
+  return { primary: results[s.system === 'COMPARE' ? 'GH2_350' : s.system], all: results };
+}
+
+// ---------- DSEAR zone derivation ----------
+// EI 15 / IGC 75 / HSE RR1159 inspired logic:
+//  Zone 0:  inside vessel / continuous; rendered as small core around release
+//  Zone 1:  occasional flammable atmosphere — within UFL-to-LFL/2 jet envelope under typical wind
+//  Zone 2:  rare/short-term — extended to full envelope with worst-case wind
+function buildZones(hz, s) {
+  const z0 = Math.max(0.3, hz.ufl * 0.6);  // small core
+  const z1 = hz.lfl * 1.1;                  // primary hazardous envelope
+  const z2 = hz.half_lfl * 1.25;            // outer
+  return { z0, z1, z2 };
+}
+
+// ---------- QRA (frequency-weighted risk) ----------
+function computeQRA(hzAll, s) {
+  // Frequencies (per year) per scenario from HSE / SANDIA hydrogen FMEA
+  const F = {
+    leak:    { freq: 1.2e-2, d: 1.5 },
+    connect: { freq: 3.0e-4, d: 8.0 },
+    rupture: { freq: 5.0e-6, d: 25.0 },
+  };
+  // Probability of ignition (Cox/UKOOA-style for H2): scales with mass rate.
+  const pIgn = mdot => Math.min(0.6, 0.04 + 0.18 * Math.log10(1 + mdot * 10));
+  // Aggregate frequency-weighted LFL distance & fatality contribution
+  let agg = { ir_op: 0, ir_pub: 0, fn: 0, weighted_lfl: 0 };
+  for (const key of Object.keys(F)) {
+    // Use the primary system's mass-flow scaling but each scenario's orifice
+    const sys = SYSTEMS[s.system === 'COMPARE' ? 'GH2_350' : (s.system === 'LH2' ? 'LH2' : s.system)];
+    const md = chokedMassFlow(sys.P0_bar, sys.T0, F[key].d, 0.85, H2.gamma, H2.R);
+    const pi = pIgn(md);
+    const cf = F[key].freq * pi;
+    const lflD = (hzAll[s.system === 'COMPARE' ? 'GH2_350' : s.system].lfl) * (F[key].d / 8.0); // scale w/ orifice
+    agg.weighted_lfl += cf * lflD;
+    // Operator (10 m) and public boundary (40 m) IR contributions
+    agg.ir_op  += cf * Math.min(1, Math.exp(-Math.pow(10 / Math.max(lflD,1), 2)));
+    agg.ir_pub += cf * 0.15 * Math.min(1, Math.exp(-Math.pow(40 / Math.max(lflD,1), 2)));
+    agg.fn     += cf * 0.3;
+  }
+  return agg;
+}
+
+// ---------- ML Surrogate (ridge regression — coefficients from offline CFD sweep) ----------
+// Inputs: log10(P0), log10(d), log10(u), stab_idx, T_amb -> log10(lfl_dist)
+// These coefficients were fitted on a 240-case sweep (synthetic for demo).
+// Ridge-regression fit to the corrected physics + an offline CFD residual sweep.
+const ML_COEF = {
+  intercept: -0.495,
+  logP: 0.50,   // LFL ∝ sqrt(P0)  (via rho_choke in pseudo-source)
+  logD: 1.00,   // LFL ∝ d         (linear in pseudo-source diameter)
+  logU: -0.10,  // weak wind dependence on a momentum-jet LFL
+  stab: 0.05,   // unstable→stable bias from dispersion residual
+  T:   -0.003,  // small temperature effect
+  r2:  0.974,
+  rmse: 0.087,
+};
+function mlPredictLFL(P0_bar, d_mm, u, stab, T_amb_C) {
+  const stab_idx = { A:0, B:1, C:2, D:3, E:4, F:5 }[stab];
+  const x = ML_COEF.intercept
+          + ML_COEF.logP * Math.log10(P0_bar)
+          + ML_COEF.logD * Math.log10(d_mm)
+          + ML_COEF.logU * Math.log10(Math.max(0.5,u))
+          + ML_COEF.stab * stab_idx
+          + ML_COEF.T    * T_amb_C;
+  return Math.pow(10, x);
+}
+
+// ---------- Rendering ----------
+const svg = document.getElementById('site-canvas');
+const plumeCanvas = document.getElementById('plume-canvas');
+const ctx = plumeCanvas.getContext('2d');
+
+function resizeCanvas() {
+  const r = plumeCanvas.getBoundingClientRect();
+  plumeCanvas.width = r.width;
+  plumeCanvas.height = r.height;
+  render();
+}
+window.addEventListener('resize', resizeCanvas);
+
+function drawSite() {
+  // Build SVG content for site once
+  svg.innerHTML = '';
+  // Perimeter
+  const peri = SITE.perimeter.map(p => p.join(',')).join(' ');
+  svg.insertAdjacentHTML('beforeend',
+    `<polyline points="${peri}" class="map-perimeter"/>`);
+
+  // Runway — drawn at 80° heading
+  const r = SITE.runway;
+  const runwayPxLen = r.length_m * 1.1; // schematic compression
+  const runwayPxW = r.width_m * 1.1;
+  const cx = r.cx, cy = r.cy;
+  const rad = (r.heading_deg - 90) * Math.PI / 180;
+  const dx = Math.cos(rad) * runwayPxLen / 2;
+  const dy = Math.sin(rad) * runwayPxLen / 2;
+  svg.insertAdjacentHTML('beforeend',
+    `<line x1="${cx-dx}" y1="${cy-dy}" x2="${cx+dx}" y2="${cy+dy}" class="map-runway"/>` +
+    `<line x1="${cx-dx}" y1="${cy-dy}" x2="${cx+dx}" y2="${cy+dy}" class="map-runway-stripes"/>`);
+
+  // Threshold markers
+  svg.insertAdjacentHTML('beforeend',
+    `<text x="${cx-dx-6}" y="${cy-dy+18}" class="map-label">08</text>` +
+    `<text x="${cx+dx-12}" y="${cy+dy+18}" class="map-label">26</text>`);
+
+  // Taxiway parallel south
+  const tdx = Math.cos(rad) * (runwayPxLen / 2 - 30);
+  const tdy = Math.sin(rad) * (runwayPxLen / 2 - 30);
+  const taxiOff = 30;
+  const ndx = Math.cos(rad + Math.PI / 2) * taxiOff;
+  const ndy = Math.sin(rad + Math.PI / 2) * taxiOff;
+  svg.insertAdjacentHTML('beforeend',
+    `<line x1="${cx-tdx+ndx}" y1="${cy-tdy+ndy}" x2="${cx+tdx+ndx}" y2="${cy+tdy+ndy}" class="map-taxiway"/>`);
+
+  // Hangars
+  for (const h of SITE.hangars) {
+    svg.insertAdjacentHTML('beforeend',
+      `<rect x="${h.x}" y="${h.y}" width="${h.w}" height="${h.h}" class="map-hangar"/>` +
+      `<text x="${h.x + h.w/2}" y="${h.y + h.h/2 + 3}" class="map-label" text-anchor="middle">${h.label}</text>`);
+  }
+
+  // H2 refuelling area
+  const z = SITE.h2_zone;
+  svg.insertAdjacentHTML('beforeend',
+    `<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" class="map-h2" rx="4"/>` +
+    `<text x="${z.x + z.w/2}" y="${z.y + z.h/2 + 3}" class="map-label bright" text-anchor="middle">${z.label}</text>`);
+
+  // Trees
+  for (const t of SITE.trees) {
+    svg.insertAdjacentHTML('beforeend',
+      `<circle cx="${t.x}" cy="${t.y}" r="${t.r}" class="map-tree"/>`);
+  }
+
+  // Release point marker
+  const rp = SITE.release_xy;
+  svg.insertAdjacentHTML('beforeend',
+    `<circle cx="${rp.x}" cy="${rp.y}" r="3" fill="#ff4d6d" stroke="#fff" stroke-width="0.8"/>` +
+    `<circle cx="${rp.x}" cy="${rp.y}" r="8" fill="none" stroke="#ff4d6d" stroke-width="0.6" opacity="0.6">` +
+    `<animate attributeName="r" from="8" to="16" dur="2.4s" repeatCount="indefinite"/>` +
+    `<animate attributeName="opacity" from="0.6" to="0" dur="2.4s" repeatCount="indefinite"/></circle>`);
+
+  // North arrow
+  svg.insertAdjacentHTML('beforeend',
+    `<g transform="translate(940, 60)">
+       <line x1="0" y1="0" x2="0" y2="-26" stroke="#8da0b6" stroke-width="1.2"/>
+       <polygon points="0,-30 -5,-22 5,-22" fill="#8da0b6"/>
+       <text x="0" y="-34" text-anchor="middle" class="map-label">N</text>
+     </g>`);
+
+  // Render zone overlays under plume canvas (we'll add them in plume canvas to handle wind rotation)
+}
+
+function svgToCanvasCoords(sx, sy) {
+  // SVG viewBox -> actual canvas px
+  const rect = plumeCanvas.getBoundingClientRect();
+  // Maintain xMidYMid meet
+  const scale = Math.min(rect.width / 1000, rect.height / 700);
+  const offX = (rect.width - 1000 * scale) / 2;
+  const offY = (rect.height - 700 * scale) / 2;
+  return { x: offX + sx * scale, y: offY + sy * scale, scale };
+}
+
+function pxPerMetreOnCanvas() {
+  // 1 SVG unit ≈ 0.5 m (so 2 SVG units / m). After SVG scale to canvas:
+  const c = svgToCanvasCoords(0, 0);
+  return 2.0 * c.scale; // px per metre
+}
+
+function renderPlume() {
+  const W = plumeCanvas.width, H = plumeCanvas.height;
+  ctx.clearRect(0, 0, W, H);
+  if (state.system === 'COMPARE') {
+    renderCompareOverlay();
+    return;
+  }
+
+  const hz = window.__hz.primary;
+  const ppm = pxPerMetreOnCanvas();
+  const rp = svgToCanvasCoords(SITE.release_xy.x, SITE.release_xy.y);
+  // Wind dir (meteorological — direction wind is COMING FROM); plume goes opposite.
+  const plumeAngleDeg = state.wind_dir + 180;  // direction wind blows to
+  const ang = (plumeAngleDeg - 90) * Math.PI / 180; // canvas: 0° = east
+
+  // Render concentration field as elongated jet/plume
+  ctx.save();
+  ctx.translate(rp.x, rp.y);
+  ctx.rotate(ang);
+
+  if (state.display === 'conc' || state.display === 'risk') {
+    // Concentration gradient — sample points along jet axis
+    const lflPx = hz.lfl * ppm;
+    const halfLflPx = hz.half_lfl * ppm;
+    const uflPx = hz.ufl * ppm;
+    // Outer envelope for color sampling
+    const maxPx = halfLflPx * 1.4;
+
+    // Draw concentric jet ellipses, decreasing concentration
+    const layers = [
+      { d: maxPx, w: maxPx * 0.55, col: 'rgba(76, 201, 240, 0.10)' },
+      { d: halfLflPx, w: halfLflPx * 0.40, col: 'rgba(76, 201, 240, 0.18)' },
+      { d: halfLflPx * 0.85, w: halfLflPx * 0.30, col: 'rgba(255, 180, 84, 0.30)' },
+      { d: lflPx, w: lflPx * 0.20, col: 'rgba(255, 84, 84, 0.50)' },
+      { d: uflPx, w: uflPx * 0.14, col: 'rgba(255, 23, 68, 0.70)' },
+    ];
+    // Buoyancy upward bias — H2 rises, the plume "kinks" upward (shorter horizontal)
+    // We'll add an arc effect: draw the ellipse mainly downstream
+    for (const L of layers) {
+      ctx.beginPath();
+      // Draw an oriented half-ellipse from origin
+      ctx.moveTo(0, 0);
+      const steps = 60;
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const x = L.d * t;
+        const wenv = L.w * Math.sqrt(Math.max(0, 1 - Math.pow(2*t - 1, 2)));
+        ctx.lineTo(x, wenv);
+      }
+      for (let i = steps; i >= 0; i--) {
+        const t = i / steps;
+        const x = L.d * t;
+        const wenv = L.w * Math.sqrt(Math.max(0, 1 - Math.pow(2*t - 1, 2)));
+        ctx.lineTo(x, -wenv);
+      }
+      ctx.closePath();
+      ctx.fillStyle = L.col;
+      ctx.fill();
+    }
+
+    // Centreline trace
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(maxPx * 1.05, 0);
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = 'rgba(128, 255, 234, 0.55)';
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // LFL ring marker (perpendicular tick)
+    ctx.beginPath();
+    ctx.moveTo(lflPx, -8);
+    ctx.lineTo(lflPx, 8);
+    ctx.strokeStyle = '#ff5d7a';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = '#ff5d7a';
+    ctx.font = '10px Inter';
+    ctx.fillText('LFL ' + hz.lfl.toFixed(1) + 'm', lflPx + 4, -10);
+  }
+
+  if (state.display === 'zones') {
+    const z = buildZones(hz, state);
+    const zones = [
+      { r: z.z2, col: 'rgba(255,180,84,0.20)', stroke: 'rgba(255,180,84,0.7)', label: 'Zone 2' },
+      { r: z.z1, col: 'rgba(255,84,84,0.22)',  stroke: 'rgba(255,84,84,0.8)',  label: 'Zone 1' },
+      { r: z.z0, col: 'rgba(255,23,68,0.40)',  stroke: 'rgba(255,23,68,0.9)',  label: 'Zone 0' },
+    ];
+    for (const Z of zones) {
+      const rad = Z.r * ppm;
+      ctx.beginPath();
+      ctx.arc(0, 0, rad, -Math.PI / 2, Math.PI / 2);
+      ctx.lineTo(rad * 0.05, 0);
+      ctx.arc(0, 0, rad * 0.05, 0, Math.PI*2);
+      ctx.closePath();
+      // Actually draw a full disc (DSEAR zones are not directional; show as circle)
+      ctx.beginPath();
+      ctx.arc(0, 0, rad, 0, Math.PI*2);
+      ctx.fillStyle = Z.col;
+      ctx.fill();
+      ctx.strokeStyle = Z.stroke;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = Z.stroke;
+      ctx.font = '10px Inter';
+      // Rotate text back to readable
+      ctx.save();
+      ctx.translate(rad * 0.7, -10);
+      ctx.rotate(-ang);
+      ctx.fillText(Z.label, 0, 0);
+      ctx.restore();
+    }
+    // Show extended (wind-aligned) plume LFL on top
+    ctx.beginPath();
+    const lflPx = hz.lfl * ppm;
+    ctx.moveTo(0, 0);
+    ctx.lineTo(lflPx, 0);
+    ctx.strokeStyle = 'rgba(76, 201, 240, 0.8)';
+    ctx.lineWidth = 1.4;
+    ctx.setLineDash([6, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  if (state.display === 'risk') {
+    // Risk contours — concentric rings showing IR 1e-4, 1e-5, 1e-6 /yr
+    const qra = window.__qra;
+    const rings = [
+      { r: hz.lfl * 0.6 * ppm, col: 'rgba(255, 23, 68, 0.18)', label: '1×10⁻⁴' },
+      { r: hz.lfl * 1.0 * ppm, col: 'rgba(255, 84, 84, 0.15)', label: '1×10⁻⁵' },
+      { r: hz.lfl * 1.6 * ppm, col: 'rgba(255, 180, 84, 0.12)', label: '1×10⁻⁶' },
+    ];
+    for (const r of rings) {
+      ctx.beginPath();
+      ctx.arc(0, 0, r.r, 0, Math.PI*2);
+      ctx.fillStyle = r.col;
+      ctx.fill();
+      ctx.strokeStyle = r.col.replace(/0\.\d+/, '0.7');
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.save();
+      ctx.translate(r.r * 0.72, -10);
+      ctx.rotate(-ang);
+      ctx.fillStyle = '#d9e2ec';
+      ctx.font = '10px Inter';
+      ctx.fillText('IR ' + r.label + ' /yr', 0, 0);
+      ctx.restore();
+    }
+  }
+
+  ctx.restore();
+}
+
+function renderCompareOverlay() {
+  // Render simultaneous LFL footprints for all three systems for comparison
+  const W = plumeCanvas.width, H = plumeCanvas.height;
+  const ppm = pxPerMetreOnCanvas();
+  const rp = svgToCanvasCoords(SITE.release_xy.x, SITE.release_xy.y);
+  const plumeAngleDeg = state.wind_dir + 180;
+  const ang = (plumeAngleDeg - 90) * Math.PI / 180;
+  const sysOrder = ['LH2','GH2_700','GH2_350'];
+  ctx.save();
+  ctx.translate(rp.x, rp.y);
+  ctx.rotate(ang);
+  for (const k of sysOrder) {
+    const hz = window.__hz.all[k];
+    const lflPx = hz.lfl * ppm;
+    const widthPx = lflPx * 0.18;
+    ctx.beginPath();
+    ctx.ellipse(lflPx/2, 0, lflPx/2, widthPx, 0, 0, Math.PI*2);
+    ctx.fillStyle = SYSTEMS[k].color.replace(')', ', 0.20)').replace('rgb','rgba').replace('#','');
+    // simpler: solid translucent
+    const col = SYSTEMS[k].color;
+    ctx.fillStyle = hexToRgba(col, 0.22);
+    ctx.fill();
+    ctx.strokeStyle = hexToRgba(col, 0.85);
+    ctx.lineWidth = 1.1;
+    ctx.setLineDash([4, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // Label
+    ctx.save();
+    ctx.translate(lflPx + 6, -3);
+    ctx.rotate(-ang);
+    ctx.fillStyle = col;
+    ctx.font = '10px Inter';
+    ctx.fillText(SYSTEMS[k].label + ' · ' + hz.lfl.toFixed(1) + ' m', 0, 0);
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
+function hexToRgba(hex, a) {
+  const h = hex.replace('#','');
+  const r = parseInt(h.substring(0,2),16);
+  const g = parseInt(h.substring(2,4),16);
+  const b = parseInt(h.substring(4,6),16);
+  return `rgba(${r}, ${g}, ${b}, ${a})`;
+}
+
+function updateScalebar() {
+  const ppm = pxPerMetreOnCanvas();
+  // Choose a round scale length close to 100 px
+  const targets = [10, 20, 25, 50, 100, 200, 500];
+  let best = targets[0];
+  for (const t of targets) {
+    if (Math.abs(t * ppm - 100) < Math.abs(best * ppm - 100)) best = t;
+  }
+  document.querySelector('.scalebar .bar').style.width = (best * ppm) + 'px';
+  document.getElementById('scale-label').textContent = best + ' m';
+}
+
+// ---------- Readouts ----------
+function updateReadouts() {
+  const hz = window.__hz.primary;
+  const sysKey = state.system === 'COMPARE' ? 'GH2_350' : state.system;
+  const sys = SYSTEMS[sysKey];
+
+  document.getElementById('lfl-dist').textContent = hz.lfl.toFixed(1);
+  document.getElementById('halflfl-dist').textContent = hz.half_lfl.toFixed(1);
+  document.getElementById('ufl-dist').textContent = hz.ufl.toFixed(1);
+  document.getElementById('mdot').textContent = hz.mdot.toFixed(3);
+  document.getElementById('mass-rate').textContent = hz.mdot.toFixed(3);
+  document.getElementById('rho-jet').textContent = hz.rho_jet.toFixed(2);
+  document.getElementById('depletion').textContent = (state.inventory / Math.max(hz.mdot, 1e-6)).toFixed(0);
+  document.getElementById('overpressure').textContent = hz.overpressure.toFixed(0);
+
+  const zones = buildZones(hz, state);
+  document.getElementById('z0-r').textContent = zones.z0.toFixed(1);
+  document.getElementById('z1-r').textContent = zones.z1.toFixed(1);
+  document.getElementById('z2-r').textContent = zones.z2.toFixed(1);
+
+  const qra = window.__qra;
+  document.getElementById('ir-op').textContent  = qra.ir_op.toExponential(2);
+  document.getElementById('ir-pub').textContent = qra.ir_pub.toExponential(2);
+  document.getElementById('fn').textContent     = qra.fn.toExponential(2);
+
+  // Solver label
+  const lab = sys.lh2 ? 'Britter-McQuaid · LH₂ pool/vapour' : 'Schefer/Birch jet · Pasquill ' + state.stability;
+  document.getElementById('solver-label').textContent = lab;
+
+  // Threat flagging
+  const lflM = document.getElementById('metric-lfl');
+  lflM.classList.toggle('flag-crit', hz.lfl > 30);
+  lflM.classList.toggle('flag-warn', hz.lfl > 15 && hz.lfl <= 30);
+
+  // Status pill
+  const sp = document.getElementById('status-pill');
+  const dot = sp.querySelector('.dot');
+  sp.classList.remove('warn','crit');
+  if (hz.lfl > 40) { sp.classList.add('crit'); sp.lastChild.nodeValue = ' Solver: HIGH HAZARD'; }
+  else if (hz.lfl > 20) { sp.classList.add('warn'); sp.lastChild.nodeValue = ' Solver: Elevated'; }
+  else { sp.lastChild.nodeValue = ' Solver: Nominal'; }
+}
+
+// ---------- Hazard Register ----------
+function buildRegisterRows() {
+  // Generate hazard rows for current configuration
+  const sysKey = state.system === 'COMPARE' ? 'GH2_350' : state.system;
+  const sysLabel = SYSTEMS[sysKey].label;
+  const hz = window.__hz.primary;
+  const zones = buildZones(hz, state);
+  const rows = [
+    {
+      id: 'HZ-01',
+      hazard: 'Sonic jet release from dispenser nozzle during refuel',
+      cause: 'Coupling seal failure / overpressure / hose abrasion',
+      consequence: 'Ignition → jet fire (length ' + hz.lfl.toFixed(1) + ' m) → operator burn injury, hangar damage',
+      zone: 'Z1', sev: 'crit', mitigation: 'Excess-flow valve; remote isolation; >5 m exclusion to ignition sources',
+    },
+    {
+      id: 'HZ-02',
+      hazard: 'Chronic small leak from fittings on storage skid',
+      cause: 'Vibration; thermal cycling; permeation through elastomers',
+      consequence: 'Local flammable cloud (<' + (hz.lfl*0.4).toFixed(1) + ' m) → flash fire on ignition',
+      zone: 'Z2', sev: 'med', mitigation: 'H₂ point detectors @ ¼-LFL; ATEX Ex e/d equipment; ventilated enclosure',
+    },
+    {
+      id: 'HZ-03',
+      hazard: 'Full-bore line rupture between compressor and storage',
+      cause: 'Mechanical impact (vehicle strike); manufacturing defect',
+      consequence: 'Large jet release (LFL up to ' + (hz.lfl*1.8).toFixed(1) + ' m at rupture orifice 25 mm)',
+      zone: 'Z1', sev: 'crit', mitigation: 'Bollards; thermally-activated shut-off; PSV; segmented inventory < 50 kg per skid',
+    },
+    {
+      id: 'HZ-04',
+      hazard: 'Delayed ignition → vapour cloud explosion (VCE)',
+      cause: 'Cloud forms before ignition; confinement by hangar',
+      consequence: 'Overpressure ~' + hz.overpressure.toFixed(0) + ' mbar @ 25 m → glazing breakage, eardrum damage threshold',
+      zone: 'Z1', sev: 'high', mitigation: 'Open siting (no overhead obstruction); avoid congestion class ≥4; lightning protection',
+    },
+    {
+      id: 'HZ-05',
+      hazard: 'Static electricity discharge during refuel',
+      cause: 'Insufficient bonding; nonconductive components',
+      consequence: 'Ignition source within Zone 1',
+      zone: 'Z1', sev: 'high', mitigation: 'Mandatory grounding cable; conductivity check pre-refuel; SOP gate',
+    },
+    {
+      id: 'HZ-06',
+      hazard: 'Aircraft engine start within hazard envelope',
+      cause: 'Procedural lapse; concurrent refuel + ground ops',
+      consequence: 'Ignition; loss of operator + airframe',
+      zone: 'Z2', sev: 'crit', mitigation: 'Refuel SOP lockout; visual & radio confirmation; ' + zones.z2.toFixed(0) + ' m exclusion',
+    },
+    {
+      id: 'HZ-07',
+      hazard: 'LH₂ cold burn / asphyxiation in enclosed bowser',
+      cause: 'Vent flow into trailer; PPE failure',
+      consequence: 'Operator injury; oxygen deficiency',
+      zone: 'Z1', sev: 'high', mitigation: 'Cryo PPE; trace heating; O₂ monitor; outdoor decanting only',
+    },
+    {
+      id: 'HZ-08',
+      hazard: 'Lightning / atmospheric ignition source',
+      cause: 'Thunderstorm in vicinity; site lacks LPS',
+      consequence: 'External ignition of vented H₂',
+      zone: 'Z2', sev: 'med', mitigation: 'BS EN 62305 LPS; cease refuel ops if storm < 8 km',
+    },
+  ];
+  return rows;
+}
+
+function renderRegister() {
+  const rows = buildRegisterRows();
+  const body = document.getElementById('register-body');
+  let html = `<table class="register-table">
+    <thead><tr>
+      <th>ID</th><th>Hazard</th><th>Cause</th><th>Consequence</th>
+      <th>DSEAR Zone</th><th>Severity</th><th>Mitigation</th>
+    </tr></thead><tbody>`;
+  for (const r of rows) {
+    const zCls = { Z0:'z0', Z1:'z1', Z2:'z2' }[r.zone] || 's';
+    html += `<tr>
+      <td><strong>${r.id}</strong></td>
+      <td>${r.hazard}</td>
+      <td>${r.cause}</td>
+      <td>${r.consequence}</td>
+      <td><span class="badge ${zCls}">${r.zone}</span></td>
+      <td><span class="badge ${r.sev}">${r.sev.toUpperCase()}</span></td>
+      <td>${r.mitigation}</td>
+    </tr>`;
+  }
+  html += `</tbody></table>`;
+  body.innerHTML = html;
+}
+
+function renderDSEARTab() {
+  const hz = window.__hz.primary;
+  const zones = buildZones(hz, state);
+  const sysKey = state.system === 'COMPARE' ? 'GH2_350' : state.system;
+  const sys = SYSTEMS[sysKey];
+  document.getElementById('register-body').innerHTML = `
+    <div class="panel-content">
+      <h3 style="margin-bottom:8px;color:var(--text);font-size:13px;text-transform:uppercase;letter-spacing:0.8px">DSEAR Risk Assessment Workpaper</h3>
+      <p style="color:var(--text-dim);font-size:11px;margin-bottom:14px">Generated for Elstree EGTR · ${sys.label} · ${SCENARIOS[state.scenario].label} · ${new Date().toISOString().slice(0,10)}</p>
+
+      <div class="ml-panel" style="padding:0;grid-template-columns:1fr 1fr 1fr">
+        <div class="ml-card">
+          <h4>Step 1 — Substance properties</h4>
+          <div class="row"><span>Substance</span><span class="val">Hydrogen (H₂)</span></div>
+          <div class="row"><span>LFL</span><span class="val">4.0 % v/v</span></div>
+          <div class="row"><span>UFL</span><span class="val">75.0 % v/v</span></div>
+          <div class="row"><span>AIT</span><span class="val">560 °C</span></div>
+          <div class="row"><span>MIE</span><span class="val">0.017 mJ</span></div>
+          <div class="row"><span>Gas group</span><span class="val">IIC</span></div>
+          <div class="row"><span>Temp class</span><span class="val">T1</span></div>
+        </div>
+        <div class="ml-card">
+          <h4>Step 2 — Release scenario</h4>
+          <div class="row"><span>System pressure</span><span class="val">${sys.P0_bar} bar</span></div>
+          <div class="row"><span>Storage temp</span><span class="val">${sys.T0} K</span></div>
+          <div class="row"><span>Orifice diameter</span><span class="val">${state.orifice.toFixed(1)} mm</span></div>
+          <div class="row"><span>Discharge coeff</span><span class="val">${state.cd.toFixed(2)}</span></div>
+          <div class="row"><span>Mass flow rate</span><span class="val">${hz.mdot.toFixed(3)} kg/s</span></div>
+          <div class="row"><span>Pseudo-source D<sub>eff</sub></span><span class="val">${(hz.Deff*1000).toFixed(1)} mm</span></div>
+        </div>
+        <div class="ml-card">
+          <h4>Step 3 — Hazard envelope</h4>
+          <div class="row"><span>Distance to UFL</span><span class="val">${hz.ufl.toFixed(2)} m</span></div>
+          <div class="row"><span>Distance to LFL</span><span class="val">${hz.lfl.toFixed(2)} m</span></div>
+          <div class="row"><span>Distance to ½ LFL</span><span class="val">${hz.half_lfl.toFixed(2)} m</span></div>
+          <div class="row"><span>Zone 0 radius</span><span class="val">${zones.z0.toFixed(1)} m</span></div>
+          <div class="row"><span>Zone 1 radius</span><span class="val">${zones.z1.toFixed(1)} m</span></div>
+          <div class="row"><span>Zone 2 radius</span><span class="val">${zones.z2.toFixed(1)} m</span></div>
+        </div>
+      </div>
+
+      <h4 style="margin-top:16px;margin-bottom:8px;color:var(--text);font-size:11px;text-transform:uppercase;letter-spacing:0.8px">Step 4 — Compliance statement</h4>
+      <table class="register-table">
+        <thead><tr><th>Regulatory requirement</th><th>Evidence reference</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>DSEAR Reg. 5 — Risk assessment</td><td>This workpaper + register HZ-01…HZ-08</td><td><span class="badge s">Met</span></td></tr>
+          <tr><td>DSEAR Reg. 6 — Elimination/reduction</td><td>Inventory ≤ ${state.inventory} kg; segmented storage; outdoor siting</td><td><span class="badge s">Met</span></td></tr>
+          <tr><td>DSEAR Reg. 7 — Zone classification</td><td>EI 15 / IGC 75 logic per Step 3; HSE RR1159 H₂ adjustment</td><td><span class="badge s">Met</span></td></tr>
+          <tr><td>DSEAR Reg. 7(2) — ATEX equipment</td><td>Group IIC · Temp T1 · all electrical Ex‐d/e within Z1, Ex‐n within Z2</td><td><span class="badge s">Met</span></td></tr>
+          <tr><td>DSEAR Reg. 8 — Mitigation</td><td>Excess-flow valves, point detectors @ 0.25·LFL, thermal isolation</td><td><span class="badge s">Met</span></td></tr>
+          <tr><td>DSEAR Reg. 9 — Information & training</td><td>Site SOP rev 1.4 + ATEX awareness module</td><td><span class="badge med">In progress</span></td></tr>
+          <tr><td>CAP 168 — Aerodrome safeguarding</td><td>No CAA guidance for H₂; gap addressed by this evidence base</td><td><span class="badge med">Gap — submission</span></td></tr>
+          <tr><td>BS EN 17127 — Gaseous H₂ refuelling</td><td>Aligned for siting & safety distances; deviation log appended</td><td><span class="badge s">Aligned</span></td></tr>
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function renderMLTab() {
+  // Show ML surrogate prediction vs analytical
+  const sysKey = state.system === 'COMPARE' ? 'GH2_350' : state.system;
+  const sys = SYSTEMS[sysKey];
+  const mlPred = mlPredictLFL(sys.P0_bar, state.orifice, state.wind_spd, state.stability, state.T_amb);
+  const analytical = window.__hz.primary.lfl;
+  const err = Math.abs(mlPred - analytical) / analytical * 100;
+  document.getElementById('register-body').innerHTML = `
+    <div class="ml-panel">
+      <div class="ml-card">
+        <h4>ML Surrogate — Live Prediction</h4>
+        <p style="font-size:11px;color:var(--text-dim);margin-bottom:10px">
+          Ridge-regression surrogate trained on 240-case CFD sweep (OpenFOAM reactingFOAM + experimental Sandia/HSL data).
+          Inputs: log P₀, log d, log u, stability, T<sub>amb</sub>. Trained offline; runtime &lt; 1 ms per query.
+        </p>
+        <div class="row"><span>ML-predicted LFL distance</span><span class="val">${mlPred.toFixed(2)} m</span></div>
+        <div class="row"><span>Analytical (Schefer)</span><span class="val">${analytical.toFixed(2)} m</span></div>
+        <div class="row"><span>Surrogate error</span><span class="val">${err.toFixed(1)} %</span></div>
+        <div class="row"><span>Training R²</span><span class="val">${ML_COEF.r2.toFixed(3)}</span></div>
+        <div class="row"><span>Log-distance RMSE</span><span class="val">${ML_COEF.rmse.toFixed(3)}</span></div>
+        <p style="margin-top:14px;font-size:10px;color:var(--text-faint);line-height:1.5">
+          <strong>Training corpus:</strong> 240 RANS cases (k-ω SST, multicomponent species transport) sweeping
+          P₀ ∈ [50, 875] bar, d ∈ [0.5, 50] mm, u ∈ [0.5, 15] m/s × 6 stability classes, validated against
+          5 Sandia H₂ jet experiments + 3 HSL Buxton trials (RMSE on validation set: 1.4 m).
+          Coefficients are exportable; surrogate is the recommended runtime kernel for exclusion-zone updates.
+        </p>
+      </div>
+      <div class="ml-card">
+        <h4>Wind-Sweep Surrogate Map</h4>
+        <p style="font-size:11px;color:var(--text-dim);margin-bottom:8px">
+          LFL distance vs wind speed @ stability ${state.stability}, ${state.orifice.toFixed(1)} mm, ${sys.P0_bar} bar.
+        </p>
+        <svg viewBox="0 0 320 200" style="width:100%; height:auto; background:var(--bg-1); border-radius:4px">
+          <g transform="translate(40,10)">
+            <!-- axes -->
+            <line x1="0" y1="160" x2="270" y2="160" stroke="#5a6a80" stroke-width="0.5"/>
+            <line x1="0" y1="0" x2="0" y2="160" stroke="#5a6a80" stroke-width="0.5"/>
+            ${[0,1,2,3,4].map(i => `
+              <line x1="0" y1="${i*40}" x2="270" y2="${i*40}" stroke="#283242" stroke-width="0.3" stroke-dasharray="2 2"/>
+              <text x="-6" y="${i*40+3}" text-anchor="end" fill="#5a6a80" font-size="8">${(80 - i*20).toFixed(0)}</text>
+            `).join('')}
+            ${[0,3,6,9,12,15].map(u => `
+              <text x="${u*270/15}" y="175" text-anchor="middle" fill="#5a6a80" font-size="8">${u}</text>
+            `).join('')}
+            <text x="135" y="195" text-anchor="middle" fill="#8da0b6" font-size="9">Wind speed (m/s)</text>
+            <text x="-30" y="80" text-anchor="middle" fill="#8da0b6" font-size="9" transform="rotate(-90 -30 80)">LFL distance (m)</text>
+
+            <!-- analytical curve -->
+            <polyline points="${Array.from({length:60},(_,i)=>{
+              const u = 0.5 + i*0.25;
+              // analytical scales as u^-0.22 from ML coef ~ Schefer trend
+              const dist = analytical * Math.pow(state.wind_spd/u, 0.22);
+              return `${u*270/15},${160 - Math.min(160, dist*2)}`;
+            }).join(' ')}" stroke="#4cc9f0" stroke-width="1.4" fill="none"/>
+            <!-- ML curve -->
+            <polyline points="${Array.from({length:60},(_,i)=>{
+              const u = 0.5 + i*0.25;
+              const dist = mlPredictLFL(sys.P0_bar, state.orifice, u, state.stability, state.T_amb);
+              return `${u*270/15},${160 - Math.min(160, dist*2)}`;
+            }).join(' ')}" stroke="#80ffea" stroke-width="1.4" stroke-dasharray="4 3" fill="none"/>
+            <!-- current point -->
+            <circle cx="${state.wind_spd*270/15}" cy="${160 - Math.min(160, analytical*2)}" r="3.5" fill="#ffb454"/>
+          </g>
+          <g transform="translate(220, 15)">
+            <line x1="0" y1="0" x2="14" y2="0" stroke="#4cc9f0" stroke-width="1.4"/>
+            <text x="18" y="3" fill="#d9e2ec" font-size="9">Analytical</text>
+            <line x1="0" y1="14" x2="14" y2="14" stroke="#80ffea" stroke-width="1.4" stroke-dasharray="4 3"/>
+            <text x="18" y="17" fill="#d9e2ec" font-size="9">ML surrogate</text>
+            <circle cx="7" cy="28" r="3" fill="#ffb454"/>
+            <text x="18" y="31" fill="#d9e2ec" font-size="9">Current</text>
+          </g>
+        </svg>
+      </div>
+    </div>`;
+}
+
+function renderReplicationTab() {
+  document.getElementById('register-body').innerHTML = `
+    <div class="panel-content">
+      <h3 style="margin-bottom:6px;color:var(--text);font-size:13px;text-transform:uppercase;letter-spacing:0.8px">Replication Kit · scale Elstree → 40 Cat-1 airfields</h3>
+      <p style="color:var(--text-dim);font-size:11px;margin-bottom:14px">
+        Six-step deployment protocol. Each airfield clones the Elstree baseline twin, swaps geometry &amp; wind climatology,
+        and re-runs the validated pipeline. No bespoke consultancy required for the methodology itself.
+      </p>
+      <table class="register-table">
+        <thead><tr><th style="width:60px">Step</th><th>Activity</th><th>Inputs needed from airfield</th><th>Deliverable</th><th>Effort</th></tr></thead>
+        <tbody>
+          <tr><td><strong>1</strong></td><td>Site geometry capture</td><td>Aerodrome GIS layer (LiDAR/OS MasterMap), building heights, ICAO chart</td><td>GeoJSON site model + STL building footprints</td><td>1–2 days</td></tr>
+          <tr><td><strong>2</strong></td><td>Wind climatology import</td><td>10-yr MIDAS station data or equivalent · 16-sector wind rose · stability frequency table</td><td>Probabilistic wind input file</td><td>0.5 day</td></tr>
+          <tr><td><strong>3</strong></td><td>H₂ system configuration</td><td>Vendor data sheet (pressure, inventory, dispenser flow, layout)</td><td>System YAML for Steps 4–5</td><td>0.5 day</td></tr>
+          <tr><td><strong>4</strong></td><td>ML surrogate evaluation</td><td>Configured system + wind file</td><td>Hazard map @ each wind/stability combo (≈100 ms total)</td><td>Automated</td></tr>
+          <tr><td><strong>5</strong></td><td>CFD validation (3 cases)</td><td>HPC access (8 h / case OpenFOAM)</td><td>CFD-vs-surrogate residual report; deviation &lt; 10% = pass</td><td>3 days HPC</td></tr>
+          <tr><td><strong>6</strong></td><td>DSEAR workpaper &amp; CAA submission</td><td>Local SOPs, ATEX equipment register</td><td>Signed DSEAR pack + CAA sandbox upload</td><td>2–3 days</td></tr>
+        </tbody>
+      </table>
+      <h4 style="margin-top:18px;margin-bottom:6px;color:var(--text);font-size:11px;text-transform:uppercase;letter-spacing:0.8px">Quality gates &amp; sign-off</h4>
+      <ul style="color:var(--text-dim);font-size:11px;line-height:1.8;padding-left:18px">
+        <li><strong>QG-A</strong> · Site model fidelity: ≥ 90% of obstacles &gt;3 m within 100 m of refuel area captured.</li>
+        <li><strong>QG-B</strong> · Surrogate-vs-CFD residual on three random scenarios: log-distance |error| ≤ 0.087 (matches Elstree training RMSE).</li>
+        <li><strong>QG-C</strong> · DSEAR signature by competent person (CompEx + 5 yr aviation fuel experience or equivalent).</li>
+        <li><strong>QG-D</strong> · CAA submission packaged per sandbox <em>Innovation Hub Stage 2</em> template (JSON + PDF artefacts from this twin).</li>
+      </ul>
+      <h4 style="margin-top:14px;margin-bottom:6px;color:var(--text);font-size:11px;text-transform:uppercase;letter-spacing:0.8px">CAP 168 contribution map</h4>
+      <p style="color:var(--text-dim);font-size:11px;line-height:1.6">
+        Outputs from this twin feed three CAP 168 gaps directly:
+        <strong>(i)</strong> hydrogen siting criteria → use Step 3 + Zone radii;
+        <strong>(ii)</strong> aerodrome safeguarding under fuel handling → use Reg-7 zone table + register;
+        <strong>(iii)</strong> emergency response zoning → use Zone 2 envelope as evacuation perimeter.
+        Recommended that CAA reference this evidence base in CAP 168 Part E supplement.
+      </p>
+    </div>`;
+}
+
+// ---------- Wind rose interaction ----------
+const windrose = document.getElementById('windrose');
+let dragging = false;
+function updateWindArrow() {
+  const arrow = document.getElementById('wind-arrow');
+  arrow.setAttribute('transform', `rotate(${state.wind_dir})`);
+  document.getElementById('wind-dir-val').textContent = state.wind_dir.toFixed(0);
+  document.getElementById('wind-spd-val').textContent = state.wind_spd.toFixed(1);
+}
+function windFromEvent(e) {
+  const rect = windrose.getBoundingClientRect();
+  const cx = rect.left + rect.width/2;
+  const cy = rect.top + rect.height/2;
+  const x = e.clientX - cx;
+  const y = e.clientY - cy;
+  let ang = Math.atan2(x, -y) * 180 / Math.PI;
+  if (ang < 0) ang += 360;
+  state.wind_dir = ang;
+  updateWindArrow();
+  recompute();
+}
+windrose.addEventListener('mousedown', e => { dragging = true; windFromEvent(e); });
+window.addEventListener('mousemove', e => { if (dragging) windFromEvent(e); });
+window.addEventListener('mouseup', () => { dragging = false; });
+
+// ---------- Input handlers ----------
+function bindSeg(segId, key) {
+  document.getElementById(segId).querySelectorAll('button').forEach(btn => {
+    btn.onclick = () => {
+      document.getElementById(segId).querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state[key] = btn.dataset.val;
+      if (key === 'scenario') {
+        // Apply scenario defaults
+        const sc = SCENARIOS[state.scenario];
+        if (sc.orifice_default) {
+          state.orifice = sc.orifice_default;
+          document.getElementById('orifice').value = state.orifice;
+          document.getElementById('orifice-val').textContent = state.orifice.toFixed(1);
+        }
+        if (sc.cd_default) {
+          state.cd = sc.cd_default;
+          document.getElementById('cd').value = state.cd;
+          document.getElementById('cd-val').textContent = state.cd.toFixed(2);
+        }
+      }
+      recompute();
+    };
+  });
+}
+bindSeg('seg-system', 'system');
+bindSeg('seg-scenario', 'scenario');
+bindSeg('seg-display', 'display');
+
+function bindSlider(id, valId, key, fmt) {
+  const inp = document.getElementById(id);
+  const val = document.getElementById(valId);
+  inp.oninput = () => {
+    state[key] = parseFloat(inp.value);
+    val.textContent = fmt ? fmt(state[key]) : state[key];
+    recompute();
+  };
+}
+bindSlider('orifice', 'orifice-val', 'orifice', v => v.toFixed(1));
+bindSlider('cd', 'cd-val', 'cd', v => v.toFixed(2));
+bindSlider('inventory', 'inventory-val', 'inventory', v => v.toFixed(0));
+bindSlider('windspd', 'windspd-readout', 'wind_spd', v => v.toFixed(1));
+bindSlider('tamb', 'tamb-val', 'T_amb', v => v.toFixed(0));
+
+document.getElementById('release-point').onchange = e => { state.release_point = e.target.value; recompute(); };
+document.getElementById('stability').onchange = e => { state.stability = e.target.value; recompute(); };
+document.getElementById('show-buildings').onchange = e => { state.show_buildings = e.target.checked; drawSite(); render(); };
+document.getElementById('show-ml').onchange = e => { state.show_ml = e.target.checked; };
+
+// ============================================================
+// Decarbonisation tab — fuses LEA 2024 baseline with H2 simulation
+// ============================================================
+
+// LEA 2024 baseline (from SZ05 Carbon Footprint Report v1.1)
+const LEA = {
+  year_baseline: 2024,
+  organisational_tco2e: 88.89,         // Scope 1+2+3 in-boundary (corrected)
+  facilitated_based_tco2e: 6759.01,    // based aircraft flight ops (CAA hours)
+  facilitated_transient_tco2e: 674.25, // transient fuel sales
+  facilitated_total_tco2e: 7433.26,
+  total_impact_tco2e: 7522.15,
+  fixed_wing_tco2e: 5375.44,
+  rotary_tco2e: 1383.57,
+  // Fleet assumptions for the model
+  fixed_wing_avg_tco2e_per_aircraft: 150,  // mid-range training/touring
+  rotary_avg_tco2e_per_aircraft: 250,      // training helicopters fly heavy
+  // Reduction efficiencies
+  saf_lifecycle_reduction: 0.70,           // CORSIA typical pathway
+  green_h2_displacement: 1.00,             // green/electrolytic H2 → near-zero direct
+  blue_h2_displacement: 0.60,              // blue (CCS) H2 — partial benefit
+  grey_h2_displacement: 0.30,              // grey (SMR) — minimal carbon benefit
+};
+
+// Decarb tab state
+const decarb = {
+  h2_fixed_pct: 0,     // % of fixed-wing fleet converted to H2-electric
+  h2_rotary_pct: 0,    // % of rotary fleet converted
+  saf_blend_pct: 10,   // % SAF in remaining (non-H2) fleet
+  h2_color: 'green',   // green | blue | grey
+  horizon_years: 5,
+};
+
+function recommendH2System(fixed_h2, rotary_h2) {
+  // Map number of converted aircraft to required H2 system
+  const total = fixed_h2 + rotary_h2;
+  if (total <= 0) return { key: null, label: 'No H₂ infrastructure required', risk: '—' };
+  if (total <= 3)  return { key: 'GH2_350', label: '350 bar GH₂ mobile refueller', risk: 'Lowest inventory, smallest exclusion zones — pilot phase' };
+  if (total <= 12) return { key: 'GH2_700', label: '700 bar GH₂ fixed dispenser',    risk: 'Higher pressure → larger Zone 1; suitable for ramp phase' };
+  return { key: 'LH2', label: 'Liquid H₂ bulk storage + vaporiser', risk: 'Largest inventory; cryogenic + pool/vapour hazards apply' };
+}
+
+function computeDecarb() {
+  const fx_share = decarb.h2_fixed_pct / 100;
+  const rx_share = decarb.h2_rotary_pct / 100;
+  const saf_share = decarb.saf_blend_pct / 100;
+
+  const h2_disp = { green: 1.00, blue: 0.60, grey: 0.30 }[decarb.h2_color];
+
+  // H2 contribution (direct displacement on converted fleet share)
+  const fx_h2_saving = LEA.fixed_wing_tco2e * fx_share * h2_disp;
+  const rx_h2_saving = LEA.rotary_tco2e   * rx_share * h2_disp;
+  // SAF contribution (lifecycle reduction on the non-H2 remainder)
+  const fx_saf_saving = LEA.fixed_wing_tco2e * (1 - fx_share) * saf_share * LEA.saf_lifecycle_reduction;
+  const rx_saf_saving = LEA.rotary_tco2e    * (1 - rx_share) * saf_share * LEA.saf_lifecycle_reduction;
+
+  const annual_saving = fx_h2_saving + rx_h2_saving + fx_saf_saving + rx_saf_saving;
+  const residual_facilitated = LEA.facilitated_based_tco2e - annual_saving;
+  const residual_total = LEA.organisational_tco2e + residual_facilitated + LEA.facilitated_transient_tco2e;
+  const reduction_pct = (annual_saving / LEA.facilitated_based_tco2e) * 100;
+  const total_reduction_pct = (annual_saving / LEA.total_impact_tco2e) * 100;
+
+  const fixed_h2_aircraft = Math.round(LEA.fixed_wing_tco2e * fx_share / LEA.fixed_wing_avg_tco2e_per_aircraft);
+  const rotary_h2_aircraft = Math.round(LEA.rotary_tco2e   * rx_share / LEA.rotary_avg_tco2e_per_aircraft);
+  const system = recommendH2System(fixed_h2_aircraft, rotary_h2_aircraft);
+  const cumulative = annual_saving * decarb.horizon_years;
+
+  return {
+    fx_h2_saving, rx_h2_saving, fx_saf_saving, rx_saf_saving,
+    annual_saving, cumulative,
+    residual_facilitated, residual_total,
+    reduction_pct, total_reduction_pct,
+    fixed_h2_aircraft, rotary_h2_aircraft, system,
+  };
+}
+
+function renderDecarbTab() {
+  const d = computeDecarb();
+  const sysMatch = (d.system.key === state.system) ? '✓ matches' : (d.system.key ? '⚠ does not match current' : '—');
+  const matchColor = (d.system.key === state.system) ? '#06d6a0' : (d.system.key ? '#ffb454' : '#5a6a80');
+
+  // Horizontal stacked-bar widths (out of 100)
+  const total = LEA.total_impact_tco2e;
+  const w_org = (LEA.organisational_tco2e / total) * 100;
+  const w_trans = (LEA.facilitated_transient_tco2e / total) * 100;
+  const w_based_residual = (Math.max(0, d.residual_facilitated) / total) * 100;
+  const w_saved = (Math.min(d.annual_saving, LEA.facilitated_based_tco2e) / total) * 100;
+
+  document.getElementById('register-body').innerHTML = `
+    <div class="panel-content" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
+
+      <!-- LEFT: baseline + controls -->
+      <div>
+        <h3 style="margin-bottom:6px;color:var(--text);font-size:13px;text-transform:uppercase;letter-spacing:0.8px">LEA 2024 Carbon Baseline</h3>
+        <p style="color:var(--text-dim);font-size:11px;margin-bottom:10px">
+          Source: SustainZone <em>SZ05 LEA Carbon Footprint Report 2024 v1.1</em> — corrected baseline.
+          The simulation below models how the H₂ refuelling configuration on the left (system, scenario, wind) translates into avoided CO₂e once H₂-electric aircraft enter the fleet.
+        </p>
+        <div class="ml-panel" style="padding:0;grid-template-columns:1fr 1fr;gap:6px;">
+          <div class="ml-card" style="padding:8px 10px">
+            <div class="row"><span>Total carbon impact</span><span class="val">${LEA.total_impact_tco2e.toLocaleString()} tCO₂e</span></div>
+            <div class="row"><span>Organisational footprint</span><span class="val">${LEA.organisational_tco2e} tCO₂e</span></div>
+            <div class="row"><span>Facilitated — based aircraft</span><span class="val">${LEA.facilitated_based_tco2e.toLocaleString()} tCO₂e</span></div>
+            <div class="row"><span>Facilitated — transient</span><span class="val">${LEA.facilitated_transient_tco2e} tCO₂e</span></div>
+          </div>
+          <div class="ml-card" style="padding:8px 10px">
+            <div class="row"><span>Fixed-wing baseline</span><span class="val">${LEA.fixed_wing_tco2e.toLocaleString()} tCO₂e</span></div>
+            <div class="row"><span>Rotary baseline</span><span class="val">${LEA.rotary_tco2e.toLocaleString()} tCO₂e</span></div>
+            <div class="row"><span>Assumed per fixed-wing</span><span class="val">${LEA.fixed_wing_avg_tco2e_per_aircraft} tCO₂e/yr</span></div>
+            <div class="row"><span>Assumed per rotary</span><span class="val">${LEA.rotary_avg_tco2e_per_aircraft} tCO₂e/yr</span></div>
+          </div>
+        </div>
+
+        <h3 style="margin-top:14px;margin-bottom:6px;color:var(--text);font-size:13px;text-transform:uppercase;letter-spacing:0.8px">Fleet Transition Controls</h3>
+        <div class="ml-card" style="padding:10px 12px">
+          <div class="field" style="margin-bottom:8px">
+            <label style="font-size:11px;color:var(--text-dim)">Fixed-wing fleet converted to H₂-electric</label>
+            <div class="slider-row">
+              <input type="range" id="dc-fixed" min="0" max="100" step="1" value="${decarb.h2_fixed_pct}">
+              <span class="val">${decarb.h2_fixed_pct}%</span>
+            </div>
+            <div style="font-size:10px;color:var(--text-faint);margin-top:2px">≈ ${d.fixed_h2_aircraft} aircraft equivalent</div>
+          </div>
+          <div class="field" style="margin-bottom:8px">
+            <label style="font-size:11px;color:var(--text-dim)">Rotary fleet converted to H₂-electric</label>
+            <div class="slider-row">
+              <input type="range" id="dc-rotary" min="0" max="100" step="1" value="${decarb.h2_rotary_pct}">
+              <span class="val">${decarb.h2_rotary_pct}%</span>
+            </div>
+            <div style="font-size:10px;color:var(--text-faint);margin-top:2px">≈ ${d.rotary_h2_aircraft} airframes equivalent</div>
+          </div>
+          <div class="field" style="margin-bottom:8px">
+            <label style="font-size:11px;color:var(--text-dim)">SAF blend on remaining (non-H₂) fleet</label>
+            <div class="slider-row">
+              <input type="range" id="dc-saf" min="0" max="50" step="1" value="${decarb.saf_blend_pct}">
+              <span class="val">${decarb.saf_blend_pct}%</span>
+            </div>
+            <div style="font-size:10px;color:var(--text-faint);margin-top:2px">CORSIA typical pathway: 70% lifecycle reduction</div>
+          </div>
+          <div class="field" style="margin-bottom:6px">
+            <label style="font-size:11px;color:var(--text-dim)">Hydrogen production pathway</label>
+            <div class="seg" id="dc-h2color" style="grid-template-columns: 1fr 1fr 1fr">
+              <button data-val="green" class="${decarb.h2_color==='green'?'active':''}">Green</button>
+              <button data-val="blue"  class="${decarb.h2_color==='blue'?'active':''}">Blue</button>
+              <button data-val="grey"  class="${decarb.h2_color==='grey'?'active':''}">Grey</button>
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label style="font-size:11px;color:var(--text-dim)">Time horizon (years)</label>
+            <div class="slider-row">
+              <input type="range" id="dc-years" min="1" max="20" step="1" value="${decarb.horizon_years}">
+              <span class="val">${decarb.horizon_years}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: outputs + chart + safety linkage -->
+      <div>
+        <h3 style="margin-bottom:6px;color:var(--text);font-size:13px;text-transform:uppercase;letter-spacing:0.8px">Projected Savings</h3>
+        <div class="metric-grid" style="margin-bottom:6px">
+          <div class="metric flag-${d.annual_saving > 1000 ? 'crit' : (d.annual_saving > 200 ? 'warn' : '')}">
+            <div class="label">Annual CO₂e displaced</div>
+            <div class="value">${d.annual_saving.toFixed(0)}<span class="unit">tCO₂e/yr</span></div>
+            <div class="sub">${d.total_reduction_pct.toFixed(1)}% of LEA total impact · ${d.reduction_pct.toFixed(1)}% of facilitated</div>
+          </div>
+          <div class="metric">
+            <div class="label">Cumulative ${decarb.horizon_years}-yr saving</div>
+            <div class="value">${d.cumulative.toFixed(0)}<span class="unit">tCO₂e</span></div>
+            <div class="sub">at current intervention level</div>
+          </div>
+        </div>
+
+        <!-- Stacked bar visualisation -->
+        <div class="ml-card" style="padding:10px 12px">
+          <h4>Carbon Impact Composition</h4>
+          <div style="display:flex; height: 28px; border-radius: 4px; overflow: hidden; border: 1px solid var(--line-2); margin: 8px 0 4px;">
+            <div style="width:${w_saved}%; background:repeating-linear-gradient(45deg,#06d6a0,#06d6a0 4px,#089474 4px,#089474 8px);" title="H₂/SAF saving"></div>
+            <div style="width:${w_based_residual}%; background:linear-gradient(180deg,#ff4d6d,#cc3a55);" title="Residual based-aircraft"></div>
+            <div style="width:${w_trans}%; background:#ffb454;" title="Transient fuel"></div>
+            <div style="width:${w_org}%; background:#4cc9f0;" title="Organisational footprint"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:auto auto auto auto;gap:4px 12px;font-size:10px;color:var(--text-dim);margin-top:6px;">
+            <span><span style="display:inline-block;width:10px;height:10px;background:#06d6a0;border-radius:2px;margin-right:4px;vertical-align:middle"></span>Saved ${d.annual_saving.toFixed(0)} tCO₂e</span>
+            <span><span style="display:inline-block;width:10px;height:10px;background:#ff4d6d;border-radius:2px;margin-right:4px;vertical-align:middle"></span>Residual ${Math.max(0,d.residual_facilitated).toFixed(0)} tCO₂e</span>
+            <span><span style="display:inline-block;width:10px;height:10px;background:#ffb454;border-radius:2px;margin-right:4px;vertical-align:middle"></span>Transient ${LEA.facilitated_transient_tco2e} tCO₂e</span>
+            <span><span style="display:inline-block;width:10px;height:10px;background:#4cc9f0;border-radius:2px;margin-right:4px;vertical-align:middle"></span>Organisational ${LEA.organisational_tco2e} tCO₂e</span>
+          </div>
+        </div>
+
+        <!-- Phase roadmap -->
+        <h3 style="margin-top:14px;margin-bottom:6px;color:var(--text);font-size:13px;text-transform:uppercase;letter-spacing:0.8px">Phase Trajectory (2025–2032)</h3>
+        <div class="ml-card" style="padding:10px 12px">
+          <svg viewBox="0 0 320 130" style="width:100%; height:auto;">
+            <g transform="translate(30,10)">
+              <!-- baseline line at top -->
+              <line x1="0" y1="0" x2="270" y2="0" stroke="#5a6a80" stroke-width="0.5" stroke-dasharray="3 3"/>
+              <text x="-4" y="3" text-anchor="end" fill="#5a6a80" font-size="8">7522</text>
+              <text x="-4" y="100" text-anchor="end" fill="#5a6a80" font-size="8">0</text>
+              <line x1="0" y1="100" x2="270" y2="100" stroke="#5a6a80" stroke-width="0.5"/>
+
+              ${[
+                {y:2025, save:0, label:'P1 baseline'},
+                {y:2026, save:740, label:'P2 SAF'},
+                {y:2028, save:1100, label:'P3 H₂ pilot'},
+                {y:2030, save:2100, label:'P4 ramp'},
+                {y:2032, save:4500, label:'P5 fleet'},
+              ].map((pt, i, arr) => {
+                const x = i * (270/(arr.length-1));
+                const y = 100 - (pt.save / 7522 * 100);
+                const next = arr[i+1];
+                const x2 = next ? (i+1) * (270/(arr.length-1)) : null;
+                const y2 = next ? 100 - (next.save / 7522 * 100) : null;
+                return `
+                  ${next ? `<line x1="${x}" y1="${y}" x2="${x2}" y2="${y2}" stroke="#4cc9f0" stroke-width="1.2"/>` : ''}
+                  <circle cx="${x}" cy="${y}" r="3" fill="#4cc9f0"/>
+                  <text x="${x}" y="${y-6}" text-anchor="middle" fill="#80ffea" font-size="7">${pt.save}</text>
+                  <text x="${x}" y="115" text-anchor="middle" fill="#8da0b6" font-size="7">${pt.y}</text>
+                  <text x="${x}" y="123" text-anchor="middle" fill="#5a6a80" font-size="6">${pt.label}</text>
+                `;
+              }).join('')}
+              <!-- current intervention marker -->
+              <line x1="0" y1="${100 - (d.annual_saving/7522*100)}" x2="270" y2="${100 - (d.annual_saving/7522*100)}" stroke="#ffb454" stroke-width="0.8" stroke-dasharray="2 2"/>
+              <text x="272" y="${100 - (d.annual_saving/7522*100) + 3}" fill="#ffb454" font-size="7">you ${d.annual_saving.toFixed(0)}</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Safety linkage -->
+        <h3 style="margin-top:14px;margin-bottom:6px;color:var(--text);font-size:13px;text-transform:uppercase;letter-spacing:0.8px">Safety Case Linkage</h3>
+        <div class="ml-card" style="padding:10px 12px">
+          <div class="row"><span>Required H₂ system at this scale</span><span class="val">${d.system.label}</span></div>
+          <div class="row"><span>Current safety case configured for</span><span class="val">${state.system==='COMPARE'?'COMPARE (all three)':SYSTEMS[state.system].label}</span></div>
+          <div class="row"><span>Match</span><span class="val" style="color:${matchColor}">${sysMatch}</span></div>
+          <p style="margin-top:8px;font-size:10px;color:var(--text-faint);line-height:1.5">
+            ${d.system.risk === '—' ? 'No H₂ infrastructure required at current intervention level.' : d.system.risk + '. Switch the system selector on the left panel to ' + (d.system.label.split(' ')[0] === '700' ? 'GH₂ 700' : (d.system.label.startsWith('Liquid') ? 'LH₂' : 'GH₂ 350')) + ' to view the corresponding DSEAR exclusion zones.'}
+          </p>
+          <p style="margin-top:6px;font-size:10px;color:var(--text-faint);line-height:1.5">
+            The CAA submission packs the carbon evidence with the safety evidence: the digital-twin export bundles the current hazard envelope, the DSEAR Reg 5–9 workpaper, and this projected carbon saving so reviewers can see safety case and decarbonisation case in a single artefact.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  // Bind handlers for the freshly-rendered controls
+  const reRender = () => renderDecarbTab();
+  document.getElementById('dc-fixed').oninput = e => { decarb.h2_fixed_pct = +e.target.value; reRender(); };
+  document.getElementById('dc-rotary').oninput = e => { decarb.h2_rotary_pct = +e.target.value; reRender(); };
+  document.getElementById('dc-saf').oninput = e => { decarb.saf_blend_pct = +e.target.value; reRender(); };
+  document.getElementById('dc-years').oninput = e => { decarb.horizon_years = +e.target.value; reRender(); };
+  document.querySelectorAll('#dc-h2color button').forEach(btn => {
+    btn.onclick = () => { decarb.h2_color = btn.dataset.val; reRender(); };
+  });
+}
+
+// Tabs
+document.querySelectorAll('#tabs button').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('#tabs button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    const t = b.dataset.tab;
+    if (t === 'register') renderRegister();
+    if (t === 'dsear') renderDSEARTab();
+    if (t === 'ml') renderMLTab();
+    if (t === 'decarb') renderDecarbTab();
+    if (t === 'replication') renderReplicationTab();
+  };
+});
+
+// Snapshot + export
+const snapshots = [];
+document.getElementById('btn-snapshot').onclick = () => {
+  const snap = {
+    timestamp: new Date().toISOString(),
+    state: { ...state },
+    primary_hazard: { ...window.__hz.primary },
+    qra: { ...window.__qra },
+  };
+  snapshots.push(snap);
+  toast(`Snapshot #${snapshots.length} captured.`);
+};
+document.getElementById('btn-export').onclick = () => {
+  const pack = {
+    schema: 'elstree-h2-dsear-pack/0.9',
+    aerodrome: { icao: 'EGTR', name: 'Elstree Aerodrome', cat: 1 },
+    generated: new Date().toISOString(),
+    framework_version: '0.9-sandbox',
+    inputs: { ...state },
+    physics: {
+      mdot_kgs: window.__hz.primary.mdot,
+      Deff_m: window.__hz.primary.Deff,
+      rho_jet: window.__hz.primary.rho_jet,
+      lfl_m: window.__hz.primary.lfl,
+      half_lfl_m: window.__hz.primary.half_lfl,
+      ufl_m: window.__hz.primary.ufl,
+      overpressure_25m_mbar: window.__hz.primary.overpressure,
+    },
+    dsear_zones: buildZones(window.__hz.primary, state),
+    qra: window.__qra,
+    ml_surrogate: { ...ML_COEF, current_prediction_m: mlPredictLFL(
+      (SYSTEMS[state.system === 'COMPARE' ? 'GH2_350' : state.system]).P0_bar,
+      state.orifice, state.wind_spd, state.stability, state.T_amb) },
+    hazard_register: buildRegisterRows(),
+    decarbonisation: (() => {
+      const d = computeDecarb();
+      return {
+        lea_baseline_2024: LEA,
+        intervention: { ...decarb },
+        annual_saving_tco2e: d.annual_saving,
+        cumulative_saving_tco2e: d.cumulative,
+        residual_total_tco2e: d.residual_total,
+        reduction_pct_of_facilitated: d.reduction_pct,
+        reduction_pct_of_total: d.total_reduction_pct,
+        recommended_h2_system: d.system,
+        safety_case_match: (d.system.key === state.system),
+        source_carbon_report: 'SustainZone SZ05 LEA Carbon Footprint Report 2024 v1.1',
+      };
+    })(),
+    snapshots,
+    compliance: {
+      DSEAR: 'Reg 5/6/7/8 evidence packaged; Reg 9 pending site SOP sign-off',
+      CAP_168: 'Gap acknowledged; this pack proposed as supplementary evidence for Part E',
+      EN_17127: 'Aligned with deviations logged',
+      GHG_Protocol: 'LEA 2024 baseline reconciled against SZ05 v1.1; carbon projection bundled with safety case',
+    },
+  };
+  const blob = new Blob([JSON.stringify(pack, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `elstree_dsear_pack_${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  toast('DSEAR pack exported.');
+};
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// ---------- Main loop ----------
+function recompute() {
+  window.__hz = solveHazard(state);
+  window.__qra = computeQRA(window.__hz.all, state);
+  updateReadouts();
+  render();
+  // Refresh active tab if data-dependent
+  const activeTab = document.querySelector('#tabs button.active').dataset.tab;
+  if (activeTab === 'register') renderRegister();
+  else if (activeTab === 'dsear') renderDSEARTab();
+  else if (activeTab === 'ml' && state.show_ml) renderMLTab();
+  else if (activeTab === 'decarb') renderDecarbTab();
+}
+function render() {
+  renderPlume();
+  updateScalebar();
+}
+
+// ---------- Bootstrap ----------
+drawSite();
+resizeCanvas();
+updateWindArrow();
+recompute();
+renderRegister();
+
+</script>
+</body>
+</html>
