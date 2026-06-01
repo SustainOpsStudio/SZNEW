@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SustainZone — Industry Pages Review</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0c1410; --bg2:#101c16; --card:#15231c; --card2:#1a2c23;
+    --line:#26392f; --ink:#e8f1eb; --mut:#9db3a8; --dim:#6f8579;
+    --grn:#34c585; --grn2:#1f7a4d; --grnsoft:#0f3a28;
+    --amber:#e0b341; --blue:#5aa9e6; --rose:#e07a8a; --violet:#9d8df0;
+    --rad:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:radial-gradient(1200px 700px at 80% -10%, #143025 0%, transparent 55%),
+               radial-gradient(900px 600px at -10% 10%, #0f2a3a 0%, transparent 50%),
+               var(--bg);
+    color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.6; -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit}
+  .wrap{max-width:1120px; margin:0 auto; padding:0 24px}
+
+  /* nav */
+  nav{position:sticky; top:0; z-index:50; backdrop-filter:blur(12px);
+    background:rgba(12,20,16,.78); border-bottom:1px solid var(--line)}
+  .nav-in{max-width:1120px; margin:0 auto; padding:14px 24px; display:flex; align-items:center; gap:20px; flex-wrap:wrap}
+  .brand{font-weight:800; letter-spacing:.3px; font-size:18px}
+  .brand span{color:var(--grn)}
+  .nav-links{display:flex; gap:6px; margin-left:auto; flex-wrap:wrap}
+  .nav-links a{font-size:13px; color:var(--mut); text-decoration:none; padding:7px 12px; border-radius:999px; transition:.2s}
+  .nav-links a:hover{color:var(--ink); background:var(--card2)}
+
+  /* mega-menu */
+  .menu{display:flex; gap:2px; margin-left:auto; flex-wrap:wrap}
+  .menu .item{position:relative}
+  .menu .item > a{display:inline-block; font-size:13px; color:var(--mut); text-decoration:none; padding:8px 13px; border-radius:999px; transition:.18s; white-space:nowrap}
+  .menu .item:hover > a, .menu .item:focus-within > a{color:var(--ink); background:var(--card2)}
+  .menu .item > a:after{content:"›"; transform:rotate(90deg); display:inline-block; margin-left:6px; color:var(--dim); font-size:12px}
+  .dd{position:absolute; top:100%; left:0; min-width:220px; background:var(--bg2); border:1px solid var(--line); border-radius:12px; padding:8px; opacity:0; visibility:hidden; transform:translateY(8px); transition:.18s; box-shadow:0 18px 44px rgba(0,0,0,.55); z-index:60}
+  .menu .item:hover .dd, .menu .item:focus-within .dd{opacity:1; visibility:visible; transform:translateY(5px)}
+  .menu .item:last-child .dd, .menu .item:nth-last-child(2) .dd{right:0; left:auto}
+  .dd .hd{font-size:10.5px; text-transform:uppercase; letter-spacing:1.2px; color:var(--dim); padding:7px 12px 5px}
+  .dd a{display:block; padding:9px 12px; font-size:13px; color:var(--mut); text-decoration:none; border-radius:8px; transition:.15s}
+  .dd a:hover{background:var(--card2); color:var(--grn)}
+  @media(max-width:760px){.menu{width:100%; margin-top:6px} .menu .item > a:after{display:none}}
+
+  /* hero */
+  header.hero{padding:84px 0 54px; position:relative}
+  .eyebrow{font-size:12px; letter-spacing:2.5px; text-transform:uppercase; color:var(--grn); font-weight:700; margin-bottom:18px}
+  h1{font-size:clamp(32px,5vw,52px); line-height:1.1; font-weight:800; letter-spacing:-.5px; max-width:18ch}
+  h1 em{font-style:normal; color:var(--grn)}
+  .lede{margin-top:22px; font-size:18px; color:var(--mut); max-width:62ch}
+  .hero-stats{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:42px}
+  @media(max-width:720px){.hero-stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:linear-gradient(160deg,var(--card2),var(--card)); border:1px solid var(--line); border-radius:var(--rad); padding:20px}
+  .stat .n{font-size:30px; font-weight:800; color:var(--grn); letter-spacing:-.5px}
+  .stat .l{font-size:13px; color:var(--mut); margin-top:4px}
+
+  /* sections */
+  section{padding:64px 0; border-top:1px solid var(--line)}
+  .sec-head{display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; margin-bottom:8px}
+  .sec-tag{font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--dim)}
+  h2{font-size:clamp(26px,3.4vw,38px); font-weight:800; letter-spacing:-.4px}
+  .sub{color:var(--mut); font-size:17px; max-width:70ch; margin-top:12px}
+  h3{font-size:14px; text-transform:uppercase; letter-spacing:1.4px; color:var(--grn); font-weight:700; margin:38px 0 16px}
+
+  /* grids */
+  .grid{display:grid; gap:18px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:860px){.g2,.g3{grid-template-columns:1fr}}
+
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--rad); padding:22px; transition:.2s}
+  .card:hover{border-color:var(--grn2)}
+  .card h4{font-size:16px; font-weight:700; margin-bottom:4px}
+  .card .pill{display:inline-block; font-size:11px; font-weight:700; color:var(--grn); background:var(--grnsoft); padding:3px 9px; border-radius:999px; margin-bottom:10px; letter-spacing:.3px}
+  .card p{font-size:14px; color:var(--mut)}
+  .card p b{color:var(--ink); font-weight:600}
+
+  /* chart card */
+  .chart-card{background:linear-gradient(160deg,var(--card2),var(--card)); border:1px solid var(--line); border-radius:var(--rad); padding:22px}
+  .chart-card .ct{font-size:15px; font-weight:700; margin-bottom:2px}
+  .chart-card .cs{font-size:12.5px; color:var(--dim); margin-bottom:16px}
+  .canvas-box{position:relative; height:300px}
+  .canvas-box.tall{height:340px}
+
+  /* lists */
+  ul.clean{list-style:none; margin-top:6px}
+  ul.clean li{position:relative; padding-left:26px; margin-bottom:12px; font-size:14.5px; color:var(--mut)}
+  ul.clean li:before{content:"›"; position:absolute; left:6px; top:-1px; color:var(--grn); font-weight:800; font-size:16px}
+  ul.clean li b{color:var(--ink); font-weight:600}
+
+  /* callout */
+  .callout{border-left:3px solid var(--grn); background:var(--card); border-radius:0 12px 12px 0; padding:18px 22px; margin-top:22px}
+  .callout.warn{border-left-color:var(--amber)}
+  .callout .k{font-weight:700; color:var(--ink)}
+  .callout p{font-size:14.5px; color:var(--mut); margin-top:4px}
+
+  .clients{margin-top:22px; padding:18px 22px; background:var(--bg2); border:1px dashed var(--line); border-radius:12px; font-size:14.5px}
+  .clients b{color:var(--grn)}
+
+  footer{padding:56px 0 80px; border-top:1px solid var(--line); color:var(--dim); font-size:13px}
+  .anchor{position:relative; top:-72px; visibility:hidden}
+  .badge-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:18px}
+  .badge{font-size:12px; color:var(--mut); border:1px solid var(--line); border-radius:999px; padding:6px 13px}
+  .badge b{color:var(--grn)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-in">
+    <div class="brand">Sustain<span>Zone</span> · Industry Review</div>
+    <div class="menu">
+      <div class="item"><a href="#healthcare">Healthcare</a>
+        <div class="dd"><div class="hd">Healthcare</div>
+          <a href="#healthcare">NHS Suppliers</a><a href="#healthcare">Pharmaceuticals</a><a href="#healthcare">Medical Devices</a><a href="#healthcare">Hospitals</a>
+        </div></div>
+      <div class="item"><a href="#fm">Facilities Management</a>
+        <div class="dd"><div class="hd">Facilities Management</div>
+          <a href="#fm">FM Providers</a><a href="#fm">Catering</a><a href="#fm">Property Management</a><a href="#fm">Corporate Estates</a>
+        </div></div>
+      <div class="item"><a href="#aviation">Aviation</a>
+        <div class="dd"><div class="hd">Aviation</div>
+          <a href="#aviation">Airports</a><a href="#aviation">Airlines</a><a href="#aviation">MRO</a><a href="#aviation">Aircraft Manufacturers</a>
+        </div></div>
+      <div class="item"><a href="#retail">Fashion &amp; Retail</a>
+        <div class="dd"><div class="hd">Fashion &amp; Retail</div>
+          <a href="#retail">Fashion</a><a href="#retail">Retail</a><a href="#retail">Distributors</a><a href="#retail">Circular Economy</a>
+        </div></div>
+      <div class="item"><a href="#financial">Financial Services</a>
+        <div class="dd"><div class="hd">Financial Services</div>
+          <a href="#financial">Private Equity</a><a href="#financial">Asset Managers</a><a href="#financial">Banks</a><a href="#financial">Investors</a>
+        </div></div>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Enhanced industry pages · Scope 3 review</div>
+    <h1>For most organisations, <em>Scope 3 is the inventory.</em></h1>
+    <p class="lede">Across aviation, healthcare, retail, facilities management and financial services, Scope 3 typically accounts for 75% to more than 99% of the total footprint — and within that, one or two GHG Protocol categories do almost all the work. Knowing exactly <em>where</em> the carbon sits is what turns a headline target into a credible reduction plan.</p>
+    <div class="hero-stats">
+      <div class="stat"><div class="n">99%+</div><div class="l">Scope 3 share for aviation OEMs &amp; FM property managers</div></div>
+      <div class="stat"><div class="n">49%</div><div class="l">of GSK's total footprint is the Ventolin inhaler alone</div></div>
+      <div class="stat"><div class="n">700×</div><div class="l">a bank's financed emissions vs its own operations (avg)</div></div>
+      <div class="stat"><div class="n">5 / 5</div><div class="l">industries where 1–2 categories dominate the footprint</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== AVIATION ===================== -->
+<span id="aviation" class="anchor"></span>
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-tag">Industry 01</span><h2>Aviation</h2></div>
+    <p class="sub"><b style="color:var(--ink)">Practical net zero support for aviation — and it starts with knowing which kind of aviation business you are.</b> Aviation doesn't have one carbon profile; it has four. Airlines, airports, manufacturers and MRO providers each carry their emissions in completely different places.</p>
+
+    <h3>Where your carbon actually sits</h3>
+    <div class="grid g2">
+      <div class="chart-card">
+        <div class="ct">Scope 3 share of total footprint, by sub-segment</div>
+        <div class="cs">The boundary you measure against depends entirely on which one you are</div>
+        <div class="canvas-box"><canvas id="avScope"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="ct">The road to 2050 — consensus reduction mix</div>
+        <div class="cs">SAF does roughly half the work; technology and operations do the rest</div>
+        <div class="canvas-box"><canvas id="avPath"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:18px">
+      <div class="card">
+        <span class="pill">Airlines · 20–35% Scope 3</span>
+        <h4>IAG, Lufthansa, Delta, easyJet</h4>
+        <p>Jet fuel combustion is <b>Scope 1</b> and dominates. Scope 3 is smaller but growing, led by the well-to-tank fuel cycle — <b>~66% of Scope 3 for easyJet</b>, ~49% for IAG. The work is fuel efficiency and sustainable fuel.</p>
+      </div>
+      <div class="card">
+        <span class="pill">Airports · 95–99%+ Scope 3</span>
+        <h4>Heathrow, AENA, Schiphol</h4>
+        <p>Airports own very little of their attributed carbon — <b>~95% at Heathrow is "in-the-air"</b> aircraft emissions. The job is splitting in-the-air from on-the-ground, then attacking what the airport controls.</p>
+      </div>
+      <div class="card">
+        <span class="pill">Manufacturers · 99%+ Scope 3</span>
+        <h4>Airbus, Boeing, Rolls-Royce</h4>
+        <p>More than 99% is the lifetime fuel burn of delivered products. <b>Airbus's 2023 deliveries ≈ 549 MtCO₂e</b> of lifetime emissions. For an OEM, the product roadmap <i>is</i> the carbon strategy.</p>
+      </div>
+      <div class="card">
+        <span class="pill">MRO · 70–90% Scope 3</span>
+        <h4>Lufthansa Technik, MTU, AAR</h4>
+        <p>Dominated by purchased materials — titanium, nickel super-alloys, composites — at <b>40–70%</b>, plus fuel WTT and transport. The lever is materials sourcing, recycling and supplier engagement.</p>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:32px">
+      <div>
+        <h3 style="margin-top:0">The levers that move the number</h3>
+        <ul class="clean">
+          <li><b>Fleet renewal:</b> new aircraft are 20–30% more efficient per seat-km; Delta's latest averaged 27% better than what they replaced.</li>
+          <li><b>Operational efficiency:</b> single-engine taxi, weight reduction, riblet films and flight planning each yield 1–3%; airspace modernisation 5–10% by 2050.</li>
+          <li><b>Airports:</b> electrify ground support (BA >90% electric/HVO at Heathrow); fixed ground power saves ~80–100 kg CO₂ per turnaround.</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="margin-top:0">Why act now</h3>
+        <ul class="clean">
+          <li><b>Compliance:</b> SAF blend mandates are the policy backbone — UK 2% in 2025 rising to 22% by 2040; EU ReFuelEU on a similar curve.</li>
+          <li><b>Tender advantage:</b> answer ESG questions with sub-segment data, not generic claims.</li>
+          <li><b>Honest roadmaps:</b> changes in fuel, fleet, operations and procurement you can actually defend.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="k">⚠ A reality check we build in</span>
+      <p>Hydrogen flight has slipped from 2035 to the late 2040s and its expected contribution was cut from 20% to ~6%. Non-CO₂ effects (contrails, NOx) roughly double aviation's effective climate forcing but sit outside most targets. We plan around what's real.</p>
+    </div>
+    <div class="clients">Who we work with: <b>Airports · Airlines · Aircraft &amp; engine manufacturers · MRO providers · Aviation suppliers</b> building tender-ready carbon evidence.</div>
+  </div>
+</section>
+
+<!-- ===================== HEALTHCARE ===================== -->
+<span id="healthcare" class="anchor"></span>
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-tag">Industry 02</span><h2>Healthcare</h2></div>
+    <p class="sub"><b style="color:var(--ink)">Advancing sustainable healthcare — where the carbon hides in the supply chain, not the building.</b> The footprint concentrates in Category 1: medicines, devices and consumables. The NHS also counts patient travel most corporates ignore — and one inhaler line can be half of a pharma company's footprint.</p>
+
+    <h3>Where your carbon actually sits</h3>
+    <div class="grid g2">
+      <div class="chart-card">
+        <div class="ct">NHS footprint breakdown</div>
+        <div class="cs">~83% is Scope 3 · a uniquely broad boundary including patient travel</div>
+        <div class="canvas-box"><canvas id="hcNhs"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="ct">When one product line dominates</div>
+        <div class="cs">Share of corporate footprint from pressurised inhalers</div>
+        <div class="canvas-box"><canvas id="hcInhaler"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid g3" style="margin-top:18px">
+      <div class="card">
+        <span class="pill">NHS &amp; systems · ~83% S3</span>
+        <h4>Health systems</h4>
+        <p>Supply chain ~45%, personal/patient travel ~13%, medicines &amp; gases ~20%, equipment ~10%. The NHS is <b>4–5% of total UK greenhouse gases</b>.</p>
+      </div>
+      <div class="card">
+        <span class="pill">Hospitals · 70–80% S3</span>
+        <h4>Providers</h4>
+        <p>Supply chain + estate energy dominate, but anaesthetic gases (Scope 1) are a top lever. Operating theatres run at <b>3–6×</b> normal intensity.</p>
+      </div>
+      <div class="card">
+        <span class="pill">Devices · 85–99% S3</span>
+        <h4>Philips, Medtronic, BD</h4>
+        <p>Materials 55–70%; use phase of imaging/dialysis 15–30%. Idle imaging machines waste <b>40–91%</b> of their energy — overnight switch-off is real.</p>
+      </div>
+      <div class="card">
+        <span class="pill">Pharma · 80–97% S3</span>
+        <h4>GSK, AstraZeneca, Pfizer</h4>
+        <p>Active ingredients, excipients &amp; packaging 63–81%; cold chain 6–14%. <b>GSK's Ventolin = 49%</b> of total footprint.</p>
+      </div>
+      <div class="card" style="grid-column:span 2">
+        <span class="pill">The four-step method</span>
+        <h4>Map → Collect → Calculate → Improve</h4>
+        <p>Map the organisation (including NHS patient travel) → collect energy, waste, travel &amp; supplier data → calculate with data-quality flags → report hotspots and ESG-ready outputs for procurement questionnaires.</p>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:32px">
+      <div>
+        <h3 style="margin-top:0">The levers that move the number</h3>
+        <ul class="clean">
+          <li><b>Pharma redesign:</b> dry-powder inhalers are 10–25× lower carbon; GSK's HFA-152a reformulation cuts ~92% per inhaler. NHS already down 33% since 2019/20.</li>
+          <li><b>Anaesthetics:</b> retiring desflurane saved the NHS ~41 ktCO₂e &amp; £4m a year; N₂O leak management a further ~90 ktCO₂e.</li>
+          <li><b>Estate &amp; devices:</b> heat pumps, NHS solar (~200 projects), MRI switch-off cutting energy 25–33%.</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="margin-top:0">Why act now</h3>
+        <div class="callout" style="margin-top:0">
+          <span class="k">The NHS supplier roadmap is a hard deadline</span>
+          <p>From <b>April 2027</b> all NHS suppliers must publish carbon reduction plans (Scope 1, 2 &amp; 3). From <b>April 2028</b>, product-level footprints. From <b>April 2030</b>, only suppliers showing progress qualify for contracts. Net zero by 2045.</p>
+        </div>
+      </div>
+    </div>
+    <div class="clients">Who we work with: <b>Hospitals &amp; health systems · Pharmaceutical companies · Medical device manufacturers · Healthcare suppliers</b> preparing for NHS net-zero procurement.</div>
+  </div>
+</section>
+
+<!-- ===================== FASHION & RETAIL ===================== -->
+<span id="retail" class="anchor"></span>
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-tag">Industry 03</span><h2>Fashion &amp; Retail</h2></div>
+    <p class="sub"><b style="color:var(--ink)">Rethinking fashion and retail for a circular economy — where almost everything is Scope 3.</b> For retailers, resellers and distributors, Scope 3 is 90–98%+ of the inventory, dominated by goods purchased for resale. What differs is <i>which</i> upstream impact dominates.</p>
+
+    <div class="callout">
+      <span class="k">Recommendation</span>
+      <p>The live page is "Fashion Industry," but this copy covers furniture, grocery, electronics and distribution too. Consider renaming to <b>Fashion &amp; Retail</b> (URL /fashion-and-retail, redirect from the old one).</p>
+    </div>
+
+    <h3>Where your carbon actually sits</h3>
+    <div class="grid g2">
+      <div class="chart-card">
+        <div class="ct">Scope 3 share across retail sub-segments</div>
+        <div class="cs">Almost the entire inventory sits upstream of the business</div>
+        <div class="canvas-box"><canvas id="rtScope"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="ct">Fashion lifecycle — where the impact lands</div>
+        <div class="cs">Purchased goods dominate; the use phase is the quiet second</div>
+        <div class="canvas-box"><canvas id="rtFashion"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid g3" style="margin-top:18px">
+      <div class="card"><span class="pill">Fashion · 95–99% S3</span><h4>Inditex, H&amp;M, Nike</h4><p>Purchased goods 60–80% (fabric ~47% for H&amp;M); use phase 10–25%; transport rising as air freight grows.</p></div>
+      <div class="card"><span class="pill">Furniture · ~98% S3</span><h4>IKEA, Wayfair</h4><p>Materials are the headline — ~46% for IKEA, <b>79% for Wayfair</b>. IKEA's FY30: −50% materials, −80% production.</p></div>
+      <div class="card"><span class="pill">Grocery · 75–96% S3</span><h4>Tesco, Walmart, Amazon</h4><p>Food &amp; agriculture drive Category 1; <b>FLAG emissions 60–70%</b> for grocers triggers a separate SBT pathway.</p></div>
+      <div class="card"><span class="pill">Electronics · 95%+ S3</span><h4>Currys, AO, Best Buy</h4><p>Purchased goods 40–55%, but appliance <b>use phase 35–50%</b> (Lowe's >80%). Energy-efficient product mix is the lever.</p></div>
+      <div class="card"><span class="pill">Distributors · 95%+ S3</span><h4>Bunzl, DCC, Diploma</h4><p>Purchased goods dominate (spend-based) with transport material. Bunzl targets 79% of Cat-1 suppliers on SBTs.</p></div>
+      <div class="card"><span class="pill">The workhorse lever</span><h4>Supplier engagement</h4><p>Get suppliers ≥67% of Scope 3 to set targets. H&amp;M cut coal-boiler suppliers 117→67 in a year.</p></div>
+    </div>
+
+    <div class="grid g2" style="margin-top:32px">
+      <div>
+        <h3 style="margin-top:0">The levers that move the number</h3>
+        <ul class="clean">
+          <li><b>Materials &amp; FLAG:</b> recycled polyester, Better Cotton, FSC wood (IKEA 97%), green steel. No-deforestation becomes mandatory under SBTi FLAG.</li>
+          <li><b>Circularity &amp; take-back:</b> H&amp;M Sellpy, Zara Pre-Owned, IKEA Buy Back — reinforced by UK Packaging EPR and the EU Digital Product Passport.</li>
+          <li><b>Use phase:</b> lower-temperature wash design; energy-efficient SKUs for electronics.</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="margin-top:0">Why act now</h3>
+        <ul class="clean">
+          <li><b>Avoid regulatory risk</b> as EPR, CSRD and DPP rules bite.</li>
+          <li><b>Gain ESG advantage</b> with clearer, product-level evidence.</li>
+          <li><b>Unlock circular revenue</b> through resale, reuse, repair and recommerce.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="k">⚠ A data-quality note</span>
+      <p>Most retail inventories rely on spend-based factors carrying ±30–50% uncertainty that shifts with inflation. We replace these with activity-based data for your largest categories so the numbers withstand audit.</p>
+    </div>
+    <div class="clients">Who we work with: <b>Fashion brands, manufacturers &amp; retailers · Furniture &amp; homeware · Grocery &amp; general retail · Consumer electronics · Distributors &amp; wholesalers.</b></div>
+  </div>
+</section>
+
+<!-- ===================== FACILITIES MANAGEMENT ===================== -->
+<span id="fm" class="anchor"></span>
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-tag">Industry 04</span><h2>Facilities Management</h2></div>
+    <p class="sub"><b style="color:var(--ink)">Smart facilities management — solving the boundary problem before the emissions problem.</b> The carbon an FM provider influences mostly sits on the client's books. Providers draw that line very differently, which is why two FM inventories can look incomparable.</p>
+
+    <h3>Where your carbon actually sits</h3>
+    <div class="grid g2">
+      <div class="chart-card">
+        <div class="ct">Scope 3 share by FM provider</div>
+        <div class="cs">Nearly everything is Scope 3 — the question is how it's classified</div>
+        <div class="canvas-box"><canvas id="fmScope"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="ct">Sodexo UK&amp;I — Scope 3 composition</div>
+        <div class="cs">Client-site energy and the food supply chain do most of the work</div>
+        <div class="canvas-box"><canvas id="fmSodexo"></canvas></div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <span class="k">The key methodological choice</span>
+      <p>Client-property energy can be (a) a Scope 3 line, (b) a separate "managed emissions" disclosure, or (c) the client's responsibility. Mitie uses (b); CBRE &amp; JLL use (a) with an intensity target; ISS uses (a) as use-of-sold-service. <b>The single most important step is to specify this in the contract to avoid double counting</b> — exactly where SustainZone adds value before a tonne is measured.</p>
+    </div>
+
+    <div class="grid g3" style="margin-top:18px">
+      <div class="card"><span class="pill">~92% S3</span><h4>Mitie</h4><p>Subcontractors &amp; consumables lead; client energy reported separately. 74% of UK fleet electrified.</p></div>
+      <div class="card"><span class="pill">&gt;95% S3</span><h4>ISS</h4><p>Servicing client sites as "use of sold service." SBTi-validated: −46.5% S1+2, −27.5% S3 by 2030.</p></div>
+      <div class="card"><span class="pill">~99% S3</span><h4>Sodexo UK&amp;I</h4><p>Client energy 53%, food 34%, commuting 9%, waste 3%. SBTi −55% by FY30.</p></div>
+      <div class="card"><span class="pill">~98% S3</span><h4>Compass Group</h4><p>Food &amp; drink dominate; client-kitchen energy reclassified to use-of-sold-services. Separate FLAG target.</p></div>
+      <div class="card"><span class="pill">~99.6% S3</span><h4>CBRE GWS / JLL</h4><p>Managed properties &gt;90% of total, per-sq-ft intensity target. JLL net zero by 2040.</p></div>
+      <div class="card"><span class="pill">Biggest lever</span><h4>The managed estate</h4><p>BMS optimisation, LED retrofits, heat-pump heating, on-site solar + battery, refrigerant phase-out.</p></div>
+    </div>
+
+    <div class="grid g2" style="margin-top:32px">
+      <div>
+        <h3 style="margin-top:0">How SustainZone delivers</h3>
+        <ul class="clean">
+          <li><b>Boundary &amp; contract design:</b> agree how energy data flows, then shift from input-based to performance-based contracts so incentives align.</li>
+          <li><b>Energy monitoring:</b> sub-metering, HVAC optimisation, BMS fault detection — typically 10–20% quick wins.</li>
+          <li><b>Performance analytics:</b> dashboards against ISO 50001, BREEAM In-Use, NABERS UK and GRESB.</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="margin-top:0">Why act now</h3>
+        <ul class="clean">
+          <li><b>Cost reduction:</b> 20–30% operational savings; 25–40% energy reductions achievable.</li>
+          <li><b>Asset value:</b> green, efficient buildings command higher rent and lower vacancy.</li>
+          <li><b>Regulatory readiness:</b> reporting hygiene that avoids double counting at sector level.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="clients">Who we work with: <b>Offices · Industrial &amp; manufacturing · Retail &amp; hospitality · Education &amp; public sector · FM providers</b> needing a defensible inventory boundary.</div>
+  </div>
+</section>
+
+<!-- ===================== FINANCIAL SERVICES ===================== -->
+<span id="financial" class="anchor"></span>
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-tag">Industry 05</span><h2>Financial Services</h2></div>
+    <p class="sub"><b style="color:var(--ink)">Financing the transition — where your footprint is your portfolio, not your office.</b> For a financial institution, operational emissions are a rounding error. The footprint is Scope 3 Category 15 — financed and facilitated emissions — which is on average over <b style="color:var(--ink)">700× larger</b> than the institution's own operations. The strategy is portfolio measurement, engagement and capital allocation.</p>
+
+    <h3>Where your carbon actually sits</h3>
+    <div class="grid g2">
+      <div class="chart-card">
+        <div class="ct">Your office vs your portfolio</div>
+        <div class="cs">Financed emissions (Category 15) dwarf operations — note the log scale</div>
+        <div class="canvas-box"><canvas id="fsScale"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="ct">Where portfolio emissions concentrate</div>
+        <div class="cs">A handful of high-emitting sectors drive most of the financed footprint · illustrative</div>
+        <div class="canvas-box"><canvas id="fsSplit"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid g3" style="margin-top:18px">
+      <div class="card">
+        <span class="pill">Private Equity · 99%+ S3</span>
+        <h4>KKR, Blackstone, CVC</h4>
+        <p>GPs influence through <b>ownership and control</b>. Measure portfolio-company emissions, attribute by value share, and act over the hold period. Align via SBTi for PE and the iCI (Initiative Climat International).</p>
+      </div>
+      <div class="card">
+        <span class="pill">Asset Managers · 99.9% S3</span>
+        <h4>BlackRock, Vanguard, Amundi</h4>
+        <p>Financed emissions span listed equity and debt; <b>coverage and data quality</b> are the battle. The lever is stewardship and proxy voting. Disclose via WACI; classify under SFDR Article 8/9.</p>
+      </div>
+      <div class="card">
+        <span class="pill">Banks · 99.8% S3</span>
+        <h4>JPMorgan, HSBC, Barclays</h4>
+        <p>Financed emissions from loans, plus <b>facilitated emissions</b> from capital-markets underwriting. Net-Zero Banking Alliance sector pathways cover power, oil &amp; gas, steel, cement and autos.</p>
+      </div>
+      <div class="card">
+        <span class="pill">Investors · 99.9% S3</span>
+        <h4>Pension funds, insurers, sovereign funds</h4>
+        <p>Asset owners <b>set the expectations</b> that cascade down the chain. Long horizons favour engagement over divestment. Aligned through the Net-Zero Asset Owner Alliance.</p>
+      </div>
+      <div class="card">
+        <span class="pill">The governing alphabet</span>
+        <h4>Frameworks</h4>
+        <p><b>PCAF</b> for measurement · <b>SBTi FI</b> for targets · NZBA / NZAM / NZAOA for commitment · TCFD / ISSB for disclosure · SFDR for EU funds.</p>
+      </div>
+      <div class="card">
+        <span class="pill">The workhorse lever</span>
+        <h4>Stewardship &amp; engagement</h4>
+        <p>A small set of high-emitting holdings drives most of the portfolio footprint. Engaging them — not just screening them out — is what changes real-world outcomes.</p>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:32px">
+      <div>
+        <h3 style="margin-top:0">The levers that move the number</h3>
+        <ul class="clean">
+          <li><b>Engagement &amp; voting:</b> set net-zero expectations on the top emitters that dominate the financed footprint, and escalate through stewardship.</li>
+          <li><b>Capital reallocation:</b> scale transition and climate-solutions finance; restrict financing of new fossil expansion.</li>
+          <li><b>Data quality:</b> move the portfolio from estimated PCAF score 4–5 to reported 1–2, and expand coverage across asset classes.</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="margin-top:0">Why act now</h3>
+        <ul class="clean">
+          <li><b>Disclosure is converging &amp; mandatory:</b> TCFD-aligned reporting, ISSB / IFRS S2, CSRD for large institutions, SFDR for funds.</li>
+          <li><b>Anti-greenwashing scrutiny</b> (FCA SDR, EU rules) means claims need PCAF-grade evidence.</li>
+          <li><b>Financed emissions are the risk:</b> they are both the disclosure focus and the real climate-transition exposure.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="k">⚠ Divestment cuts your number, not the molecules</span>
+      <p>Selling a high-emitting asset to a less-scrupulous owner lowers your inventory while real-world emissions continue. Engagement and transition finance are what actually move outcomes — and they are far harder to fake.</p>
+    </div>
+    <div class="callout">
+      <span class="k">A data-quality note</span>
+      <p>Most financed-emissions inventories start at PCAF data-quality score 4–5 (estimated/proxy). The credibility step is reported, asset-level data for your largest holdings — exactly the evidence regulators and assurers now expect.</p>
+    </div>
+    <div class="clients">Who we work with: <b>Private equity &amp; GPs · Asset managers · Banks &amp; lenders · Asset owners &amp; institutional investors · Financial institutions</b> building PCAF-aligned financed-emissions inventories.</div>
+  </div>
+</section>
+
+<!-- ===================== CLOSING ===================== -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-tag">Closing</span><h2>The same pattern, every sector</h2></div>
+    <p class="sub">Emissions concentrate somewhere very specific — the use phase for aviation OEMs and electronics retailers, purchased goods and services for healthcare, retail and FM, and financed emissions for financial services. Once you find that hotspot, the levers are well understood. The hard part is governance: the right boundary, a recalculation policy, data-quality scoring and supplier engagement so the numbers survive audit, CSRD assurance and review from CDP, SBTi and PCAF. That's the practical, no-fluff work SustainZone exists to do.</p>
+    <div class="badge-row">
+      <span class="badge">GHG Protocol</span><span class="badge">SBTi</span><span class="badge">CSRD</span>
+      <span class="badge">PCAF</span><span class="badge">CDP</span><span class="badge"><b>FLAG</b></span>
+      <span class="badge">EPR</span><span class="badge">Digital Product Passport</span><span class="badge">ISO 50001</span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Figures drawn from the SustainZone Scope 3 research briefing ("Scope 3 hotspots, pathways and the acquisition problem"), compiling published disclosures — company CDP and annual reports, IATA/ATAG aviation pathways, NHS England net-zero guidance, SBTi and GHG Protocol standards, and PCAF methodology. Company examples are illustrative of sector dynamics, based on those organisations' own published reporting.
+    <div style="margin-top:14px;color:var(--dim)">© 2025 SustainZone Ltd · Internal review draft</div>
+  </div>
+</footer>
+
+<script>
+const GRN="#34c585", GRN2="#1f7a4d", AMB="#e0b341", BLU="#5aa9e6", ROSE="#e07a8a", VIO="#9d8df0", DIM="#9db3a8";
+Chart.defaults.color = "#9db3a8";
+Chart.defaults.font.family = "-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif";
+Chart.defaults.font.size = 12;
+const grid = "rgba(255,255,255,.06)";
+const noLegend = {legend:{display:false}};
+function hbar(id, labels, data, colors, max){
+  new Chart(document.getElementById(id),{type:"bar",data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:6,barPercentage:.72}]},
+   options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:noLegend,
+    scales:{x:{beginAtZero:true,max:max||100,grid:{color:grid},ticks:{callback:v=>v+"%"}},y:{grid:{display:false}}}}});
+}
+function doughnut(id, labels, data, colors){
+  new Chart(document.getElementById(id),{type:"doughnut",data:{labels,datasets:[{data,backgroundColor:colors,borderColor:"#15231c",borderWidth:3}]},
+   options:{responsive:true,maintainAspectRatio:false,cutout:"58%",
+    plugins:{legend:{position:"right",labels:{boxWidth:12,padding:12,font:{size:12}}},
+     tooltip:{callbacks:{label:c=>" "+c.label+": "+c.parsed+"%"}}}}});
+}
+
+// Aviation
+hbar("avScope",["Airlines","MRO","Airports","Manufacturers"],[28,80,97,99],[BLU,AMB,GRN,GRN2]);
+doughnut("avPath",["Sustainable aviation fuel","New aircraft & engine tech","Operations & ATM","Residual / other"],[50,28,9,13],[GRN,BLU,AMB,VIO]);
+
+// Healthcare
+doughnut("hcNhs",["Supply chain (Cat 1)","Medicines, chemicals & gases","Personal & patient travel","Medical equipment","Other"],[45,20,13,10,12],[GRN,BLU,AMB,VIO,DIM]);
+new Chart(document.getElementById("hcInhaler"),{type:"bar",
+ data:{labels:["GSK — Ventolin","AstraZeneca inhalers",["NHS inhaler cut","since 2019/20"]],
+  datasets:[{label:"% of footprint",data:[49,20,33],backgroundColor:[ROSE,AMB,GRN],borderRadius:6,barPercentage:.6}]},
+ options:{responsive:true,maintainAspectRatio:false,plugins:noLegend,
+  scales:{y:{beginAtZero:true,max:60,grid:{color:grid},ticks:{callback:v=>v+"%"}},x:{grid:{display:false}}}}});
+
+// Retail
+hbar("rtScope",["Grocery","Fashion","Electronics","Distributors","Furniture"],[86,97,96,96,98],[AMB,GRN,BLU,VIO,ROSE]);
+doughnut("rtFashion",["Purchased goods","Use phase (wash/dry)","Upstream transport","End-of-life"],[70,18,8,4],[GRN,BLU,AMB,DIM]);
+
+// FM
+hbar("fmScope",["Mitie","ISS","Compass","Sodexo","CBRE / JLL"],[92,95,98,99,99.6],[BLU,VIO,AMB,GRN,GRN2]);
+doughnut("fmSodexo",["Client-site energy","Food supply chain","Commuting","Client waste","Other"],[53,34,9,3,1],[GRN,AMB,BLU,VIO,DIM]);
+
+// Financial Services
+new Chart(document.getElementById("fsScale"),{type:"bar",
+ data:{labels:["Operational — Scope 1 & 2","Financed — Scope 3 · Cat 15"],
+  datasets:[{data:[1,700],backgroundColor:[DIM,GRN],borderRadius:6,barPercentage:.55}]},
+ options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>" "+c.parsed.x+"× operational"}}},
+  scales:{x:{type:"logarithmic",grid:{color:grid},ticks:{callback:v=>v+"×"}},y:{grid:{display:false}}}}});
+doughnut("fsSplit",["Energy & utilities","Materials & industry","Transport","Real estate","Agriculture & food","Other"],[30,22,15,13,12,8],[GRN,BLU,AMB,VIO,ROSE,DIM]);
+</script>
+</body>
+</html>
